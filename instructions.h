@@ -215,7 +215,8 @@ private:
 class IntToMask : public Instruction
 {
 public:
-    IntToMask(const string maskname, const string valname) : mask(maskname), value(valname) {}
+    IntToMask(const string maskname, const string valname) 
+    : mask(maskname), value(valname) {}
     string serialize() const;
 private:
     const string mask, value;
@@ -224,7 +225,8 @@ private:
 class DeclareOffsets : public Instruction
 {
 public:
-    DeclareOffsets(string pname_, string vname_) : pname(pname_), vname(vname_) { }
+    DeclareOffsets(string pname_, string vname_) 
+    : pname(pname_), vname(vname_) { }
     string serialize() const;
     int numDeclarations() const
     {
@@ -251,7 +253,8 @@ private:
 class LoadFVec : public MemRefInstruction
 {
 public:
-    LoadFVec( const FVec& v_, const Address* a_, const string mask_) : v(v_), a(a_), mask(mask_) {}
+    LoadFVec( const FVec& v_, const Address* a_, const string mask_) 
+    : v(v_), a(a_), mask(mask_) {}
     string serialize() const;
     const Address* getAddress() const
     {
@@ -271,7 +274,8 @@ private:
 class StoreFVec : public MemRefInstruction
 {
 public:
-    StoreFVec( const FVec& v_, const Address* a_, int isStreaming_) : v(v_), a(a_), isStreaming(isStreaming_) {}
+    StoreFVec( const FVec& v_, const Address* a_, int isStreaming_) 
+    : v(v_), a(a_), isStreaming(isStreaming_) {}
     string serialize() const;
     const Address* getAddress() const
     {
@@ -291,7 +295,8 @@ private:
 class GatherFVec : public MemRefInstruction
 {
 public:
-    GatherFVec( const FVec& v_, const GatherAddress* a_, const string mask_) : v(v_), a(a_), mask(mask_) {}
+    GatherFVec( const FVec& v_, const GatherAddress* a_, const string mask_) 
+    : v(v_), a(a_), mask(mask_) {}
     string serialize() const;
     const Address* getAddress() const
     {
@@ -360,7 +365,8 @@ public:
     string serialize() const
     {
         ostringstream stream;
-        stream << " _mm_prefetch((const char *)( " << a->serialize() << " ), " << hint << ");" << endl;
+        stream << " _mm_prefetch((const char *)( " << a->serialize() 
+               << " ), " << hint << ");" << endl;
         return stream.str();
     }
 
@@ -385,7 +391,8 @@ public:
     string serialize() const
     {
         ostringstream stream;
-        stream << " _mm_prefetch((const char *)( " << a->serialize() << " ), " << hint << ");" << endl;
+        stream << " _mm_prefetch((const char *)( " << a->serialize() << " ), " 
+               << hint << ");" << endl;
         return stream.str();
     }
 
@@ -465,7 +472,8 @@ private:
 class Mul : public Instruction
 {
 public:
-    Mul( const FVec& ret_, const FVec& a_, const FVec& b_, const string& mask_) : ret(ret_), a(a_), b(b_), mask(mask_) {}
+    Mul( const FVec& ret_, const FVec& a_, const FVec& b_, const string& mask_) 
+    : ret(ret_), a(a_), b(b_), mask(mask_) {}
     string serialize() const;
     int numArithmeticInst() const
     {
@@ -481,7 +489,9 @@ private:
 class FnMAdd : public Instruction
 {
 public:
-    FnMAdd( const FVec& ret_, const FVec& a_, const FVec& b_, const FVec& c_, const string& mask_) : ret(ret_), a(a_), b(b_), c(c_), mask(mask_) {}
+    FnMAdd( const FVec& ret_, const FVec& a_, const FVec& b_
+          , const FVec& c_, const string& mask_) 
+          : ret(ret_), a(a_), b(b_), c(c_), mask(mask_) {}
     string serialize() const;
     int numArithmeticInst() const
     {
@@ -498,7 +508,9 @@ private:
 class FMAdd : public Instruction
 {
 public:
-    FMAdd( const FVec& ret_, const FVec& a_, const FVec& b_, const FVec& c_, const string& mask_) : ret(ret_), a(a_), b(b_), c(c_), mask(mask_) {}
+    FMAdd( const FVec& ret_, const FVec& a_, const FVec& b_
+         , const FVec& c_, const string& mask_) 
+    : ret(ret_), a(a_), b(b_), c(c_), mask(mask_) {}
     string serialize() const;
     int numArithmeticInst() const
     {
@@ -515,7 +527,8 @@ private:
 class Add : public Instruction
 {
 public:
-    Add( const FVec& ret_, const FVec& a_, const FVec& b_, const string& mask_) : ret(ret_), a(a_), b(b_), mask(mask_) {}
+    Add( const FVec& ret_, const FVec& a_, const FVec& b_, const string& mask_) 
+    : ret(ret_), a(a_), b(b_), mask(mask_) {}
     string serialize() const;
     int numArithmeticInst() const
     {
@@ -531,7 +544,8 @@ private:
 class Sub : public Instruction
 {
 public:
-    Sub( const FVec& ret_, const FVec& a_, const FVec& b_, const string& mask_) : ret(ret_), a(a_), b(b_), mask(mask_) {}
+    Sub( const FVec& ret_, const FVec& a_, const FVec& b_, const string& mask_) 
+    : ret(ret_), a(a_), b(b_), mask(mask_) {}
     string serialize() const;
     int numArithmeticInst() const
     {
@@ -547,7 +561,8 @@ private:
 class MovFVec : public Instruction
 {
 public:
-    MovFVec( const FVec& ret_, const FVec& a_, const string mask_) : ret(ret_), a(a_), mask(mask_) {}
+    MovFVec( const FVec& ret_, const FVec& a_, const string mask_) 
+    : ret(ret_), a(a_), mask(mask_) {}
     string serialize() const;
     int numArithmeticInst() const
     {
@@ -560,134 +575,187 @@ private:
 };
 
 
-void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask);
-void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen);
+void 
+loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a
+          , int soanum, int soalen, string mask);
+               
+void 
+storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a
+           , int soanum, int soalen);
 
-void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward, string mask);
-void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask);
-void packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask);
+void 
+loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1
+               , const Address *a2, int soanum, int soalen
+               , int forward, string mask);
+                    
+void 
+unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask
+         , int possibleMask);
+              
+void 
+packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask
+       , int possibleMask);
 
-void gatherFVec(InstVector& ivector, const FVec& ret, GatherAddress *a, string mask);
-void scatterFVec(InstVector& ivector, const FVec& ret, GatherAddress *a);
-void gatherPrefetchL1(InstVector& ivector, GatherAddress *a, int type = 0);
-void gatherPrefetchL2(InstVector& ivector, GatherAddress *a, int type = 0);
+void 
+gatherFVec(InstVector& ivector, const FVec& ret, GatherAddress *a, string mask);
+              
+void 
+scatterFVec(InstVector& ivector, const FVec& ret, GatherAddress *a);
 
-void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen);
+void 
+gatherPrefetchL1(InstVector& ivector, GatherAddress *a, int type = 0);
+
+void 
+gatherPrefetchL2(InstVector& ivector, GatherAddress *a, int type = 0);
+
+void 
+transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen);
 
 
-inline void movFVec(InstVector& ivector, const FVec& ret, const FVec& a, string mask)
+inline void 
+movFVec(InstVector& ivector, const FVec& ret, const FVec& a, string mask)
 {
     ivector.push_back(new MovFVec(ret, a, mask));
 }
 
-inline void beginScope(InstVector& ivector)
+inline void 
+beginScope(InstVector& ivector)
 {
     ivector.push_back(new BeginScope());
 }
 
-inline void endScope(InstVector& ivector)
+inline void 
+endScope(InstVector& ivector)
 {
     ivector.push_back(new EndScope());
 }
 
-inline void ifStatement(InstVector& ivector, string condition)
+inline void 
+ifStatement(InstVector& ivector, string condition)
 {
     ivector.push_back( new IfStringCond(condition));
 }
 
-inline void elseStatement(InstVector& ivector)
+inline void 
+elseStatement(InstVector& ivector)
 {
     ivector.push_back( new ElseStatement());
 }
 
-inline void ifAllOneStatement(InstVector& ivector, string condition)
+inline void 
+ifAllOneStatement(InstVector& ivector, string condition)
 {
     ivector.push_back( new IfAllOneCond(condition));
 }
 
-inline void inlineCode(InstVector& ivector, string code)
+inline void 
+inlineCode(InstVector& ivector, string code)
 {
     ivector.push_back( new InlineCode(code));
 }
 
-inline void declareFVecFromFVec(InstVector& ivector, const FVec& v)
+inline void 
+declareFVecFromFVec(InstVector& ivector, const FVec& v)
 {
     ivector.push_back(new DeclareFVec(v));
 }
 
-inline FVec declareFVec(InstVector& ivector, const std::string name)
+inline FVec 
+declareFVec(InstVector& ivector, const std::string name)
 {
     FVec tmp(name);
     ivector.push_back(new DeclareFVec( tmp ));
     return tmp;
 }
 
-inline void initFVec(InstVector& ivector, const FVec& ret)
+inline void 
+initFVec(InstVector& ivector, const FVec& ret)
 {
     ivector.push_back(new InitFVec(ret));
 }
 
-inline void setZero(InstVector& ivector, const FVec& ret)
+inline void 
+setZero(InstVector& ivector, const FVec& ret)
 {
     ivector.push_back(new SetZero(ret));
 }
 
-inline void mulFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, string mask = "")
+inline void 
+mulFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b
+      , string mask = "")
 {
     ivector.push_back(new Mul(ret, a, b, mask));
 }
 
-inline void addFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, string mask = "")
+inline void 
+addFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b
+      , string mask = "")
 {
     ivector.push_back(new Add(ret, a, b, mask));
 }
 
-inline void subFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, string mask = "")
+inline void 
+subFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b
+      , string mask = "")
 {
     ivector.push_back(new Sub(ret, a, b, mask));
 }
 
-inline void fmaddFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, const FVec& c, string mask = "")
+inline void 
+fmaddFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b
+        , const FVec& c, string mask = "")
 {
     ivector.push_back(new FMAdd(ret, a, b, c, mask));
 }
 
-inline void fnmaddFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, const FVec& c, string mask = "")
+inline void 
+fnmaddFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b
+         , const FVec& c, string mask = "")
 {
     ivector.push_back(new FnMAdd(ret, a, b, c, mask));
 }
 
-inline void loadFVec(InstVector& ivector, const FVec& ret, const Address *a, string mask)
+inline void 
+loadFVec(InstVector& ivector, const FVec& ret, const Address *a, string mask)
 {
     ivector.push_back( new LoadFVec(ret, a, mask));
 }
 
-inline void storeFVec(InstVector& ivector, const FVec& ret, const Address *a, int isStreaming)
+inline void 
+storeFVec(InstVector& ivector, const FVec& ret, const Address *a
+        , int isStreaming)
 {
     ivector.push_back( new StoreFVec(ret, a, isStreaming));
 }
 
-inline void loadBroadcastScalar(InstVector& ivector, const FVec& ret, string scalar_name, int type = 0)
+inline void 
+loadBroadcastScalar(InstVector& ivector, const FVec& ret, string scalar_name
+                  , int type = 0)
 {
-    ivector.push_back( new LoadBroadcast(ret, new AddressOfScalar(scalar_name, type)));
+    ivector.push_back( new LoadBroadcast(ret, new AddressOfScalar(scalar_name
+                                                               , type)));
 }
 
-inline void prefetchL1(InstVector& ivector, const Address *a, int type = 0)
+inline void 
+prefetchL1(InstVector& ivector, const Address *a, int type = 0)
 {
     ivector.push_back( new PrefetchL1(a, type));
 }
 
-inline void prefetchL2(InstVector& ivector, const Address *a, int type = 0)
+inline void 
+prefetchL2(InstVector& ivector, const Address *a, int type = 0)
 {
     ivector.push_back( new PrefetchL2(a, type));
 }
 
-inline void declareMask(InstVector& ivector, const string name, const string value="")
+inline void 
+declareMask(InstVector& ivector, const string name, const string value="")
 {
     ivector.push_back(new DeclareMask(name, value));
 }
 
-inline void intToMask(InstVector& ivector, const string maskname, const string intname)
+inline void 
+intToMask(InstVector& ivector, const string maskname, const string intname)
 {
     ivector.push_back(new IntToMask(maskname, intname));
 }
