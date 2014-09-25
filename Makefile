@@ -1,12 +1,13 @@
 
-mode=mic
+mode=scalar
 
 mode:=$(strip $(mode))
 
 CONFFILE=customMake.$(mode)
 include $(CONFFILE)
 
-CXXHOST  = icpc -O3 -g
+#CXXHOST  = icpc -O3 -g
+CXXHOST = g++ -O3 -g
 
 ifeq ($(mode),mic)
 
