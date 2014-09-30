@@ -15,6 +15,8 @@ using namespace std;
 #define FVecBaseType "double"
 #endif
 
+/** Create the output directory for the generated test scripts.
+ */
 void create_test_dir()
 {
     struct stat st = {0};

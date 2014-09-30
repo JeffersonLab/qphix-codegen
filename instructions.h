@@ -201,7 +201,7 @@ private:
 class DeclareMask : public Instruction
 {
 public:
-    DeclareMask(string name_, string value_="") : name(name_), value(value_) { }
+    DeclareMask(string name_, string value_="") : name(name_), value(value_) {}
     string serialize() const;
     int numDeclarations() const
     {
@@ -356,7 +356,9 @@ private:
     const Address* a;
 };
 
-
+/* \todo : The PrefetchL1 needs to be made general so that it works with the
+ *  intended BG/Q port.
+ */
 class PrefetchL1 : public MemRefInstruction
 {
 public:
@@ -383,6 +385,10 @@ private:
     const Address* a;
     string hint;
 };
+
+/* \todo : The PrefetchL2 needs to be made general so that it works with the
+ *  intended BG/Q port.
+ */
 
 class PrefetchL2 : public MemRefInstruction
 {

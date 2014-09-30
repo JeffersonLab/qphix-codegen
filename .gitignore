@@ -29,3 +29,6 @@
 
 # Temp files
 *.*~
+
+# Ignore the generated testfiles
+testsuite/testscripts

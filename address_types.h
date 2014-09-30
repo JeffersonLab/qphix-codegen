@@ -15,18 +15,23 @@ enum AddressType {
 
 class Address
 {
+
 public:
     Address(int isHalfType_) : halfType(isHalfType_) {};
+    
     virtual string serialize(void) const=0;
     virtual AddressType getType(void) const = 0;
+    
     int isHalfType(void)
     {
         return halfType;
     }
+    
     int isHalfType(void) const
     {
         return halfType;
     }
+    
 private:
     int halfType;
 };
@@ -36,10 +41,12 @@ class GenericAddress : public Address
 public:
     GenericAddress(string base_, int isHalfType) 
     : Address(isHalfType), base(base_) {};
+    
     AddressType getType(void) const
     {
         return GENERIC_ADDRESS;
     }
+    
     string serialize() const
     {
         ostringstream outbuf;
@@ -56,10 +63,12 @@ class AddressOfScalar : public Address
 public:
     AddressOfScalar(string scalar_name_, int isHalfType) 
     : Address(isHalfType), scalar_name(scalar_name_) {};
+
     AddressType getType(void) const
     {
         return ADDRESS_OF_SCALAR;
     }
+
     string serialize() const
     {
         ostringstream outbuf;
@@ -183,6 +192,7 @@ class AddressOffset : public Address
 public:
     AddressOffset(const Address* a_, string offset_var_) 
     : Address(a_->isHalfType()), a(a_), offset_var(offset_var_) {};
+    
     AddressType getType(void) const
     {
         return a->getType();

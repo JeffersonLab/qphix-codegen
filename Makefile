@@ -1,16 +1,16 @@
 
-mode=scalar
+mode=avx
 
 mode:=$(strip $(mode))
+ARCH=$(mode)
 
 CONFFILE=customMake.$(mode)
 include $(CONFFILE)
 
 #CXXHOST  = icpc -O3 -g
-CXXHOST = g++ -O3 -g
+CXXHOST = g++ -O3 -g -march=corei7-avx
 
 ifeq ($(mode),mic)
-
 ifeq ($(PRECISION),1)
 override VECLEN=16
 else
@@ -90,17 +90,28 @@ yesnolist += TESTFLAG
 deflist += SOALEN
 deflist += VECLEN
 deflist += PRECISION
+deflist += ARCH
 
 DEFS += $(strip $(foreach var, $(yesnolist), $(if $(filter 1, $($(var))), -D$(var))))
 DEFS += $(strip $(foreach var, $(deflist), $(if $($(var)), -D$(var)=$($(var)))))
 
-SOURCES = codegen.cc data_types.cc dslash.cc dslash_common.cc inst_dp_vec8.cc inst_sp_vec16.cc inst_dp_vec4.cc inst_sp_vec8.cc inst_sp_vec4.cc inst_dp_vec2.cc inst_scalar.cc
+SOURCES = codegen.cc dslash.cc dslash_common.cc
+CODEGEN_SOURCES = data_types.cc inst_dp_vec8.cc inst_sp_vec16.cc inst_dp_vec4.cc inst_sp_vec8.cc inst_sp_vec4.cc inst_dp_vec2.cc inst_scalar.cc
+CODEGEN_OBJS = data_types.o inst_dp_vec8.o inst_sp_vec16.o inst_dp_vec4.o inst_sp_vec8.o inst_sp_vec4.o inst_dp_vec2.o inst_scalar.o
+
 HEADERS = address_types.h  data_types.h  dslash.h  instructions.h Makefile $(CONFFILE)
 
 all: codegen
 
-codegen: $(SOURCES) $(HEADERS) 
-	$(CXXHOST) $(DEFS) $(SOURCES) -o ./codegen
+libcodegen.a: $(CODEGEN_OBJS)
+	ar -cru libcodegen.a $(CODEGEN_OBJS)
+	ranlib libcodegen.a
+
+codegen: $(SOURCES) libcodegen.a
+	$(CXXHOST) $(DEFS) -I.  $(SOURCES) -o ./codegen -L. -lcodegen
+
+.cc.o:
+	$(CXXHOST) $(DEFS) -I. -c $< 
 
 .PHONY: cgen mic avx avx2 avx512 sse scalar
 
@@ -159,10 +170,24 @@ clean:
 	rm -rf *.o ./codegen 
 
 cleanall: 
-	rm -rf *.o ./codegen
+	rm -rf *.o ./codegen libcodegen.a
 	rm -rf ./avx 
 	rm -rf ./avx2
 	rm -rf ./avx512
 	rm -rf ./mic
 	rm -rf ./sse
 	rm -rf ./scalar
+	rm testsuite/generate_test
+	rm testsuite/run_tests
+
+generate_test: testsuite/generate_test.cc libcodegen.a
+	$(CXXHOST) $(DEFS) -I. testsuite/generate_test.cc -o testsuite/$@.exe -L. -lcodegen
+
+generate_test_files: generate_test
+	testsuite/generate_test
+
+run_tests: testsuite/run_tests.cc
+	$(CXXHOST) $(DEFS) -I. $< -o testsuite/$@.exe
+
+do_tests: run_tests generate_test_files
+	testsuite/run_tests
