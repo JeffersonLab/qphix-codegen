@@ -31,4 +31,4 @@
 *.*~
 
 # Ignore the generated testfiles
-testsuite/testscripts
+testsuite/intrinsic_fns
