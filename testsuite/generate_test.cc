@@ -1,5 +1,6 @@
 #include "instructions.h"
 #include "data_types.h"
+#include "generate_test.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,115 +19,10 @@ using namespace std;
 #define FVecBaseType "double"
 #endif
 
-
-class GenerateInstructions
+/** Override the default constructor */
+GenerateTestFns::GenerateTestFns()
 {
-private:
-    /**
-     * Private helper function to get the path of the executable. 
-     */
-    string getExecutableDirectory();
-    /** 
-     * Create a directory under the same path as the "generate_tests.exe" 
-     * executable and save the generated test functions there.
-     */
-    void createTestDir();
-
-    string outPath;
-
-public:
-    /**
-     * Multiplication of packed double-precision (64-bit) floating-point 
-     * elements in a and b and add the negated intermediate result to packed 
-     * elements in c, and store the results in dst. 
-     */
-    void generateFnMadd(bool useMask); 
-    /**
-     * Multiplication of packed double-precision (64-bit) floating-point 
-     * elements in a and b and add the intermediate result to packed 
-     * elements in c, and store the results in dst. 
-     */
-    void generateFMadd(bool useMask);    
-    /**
-     * Subtract packed double-precision (64-bit) floating-point elements in b 
-     * from packed double-precision (64-bit) floating-point elements in a, 
-     * and store the results in dst.
-     */
-    void generateSub(bool useMask);
-    /**
-     * Add packed double-precision (64-bit) floating-point elements in 
-     * a and b, and store the results in dst.
-     */
-    void generateAdd(bool useMask);
-    /**
-     * Multiply packed double-precision (64-bit) floating-point elements in a 
-     * and b, and store the results in dst. 
-     */
-    void generateMul(bool useMask);
-    /**
-     * Return vector with all elements set to zero.
-     */
-    void generateSetZero();
-    /**
-     * Load packed floating point elements from memory to VPU. Then store the 
-     * loaded vector elements to a different memory location. We are trying to 
-     * test if the load and store works as expected. 
-     * The interesting test is to ensure the blended load and store are working 
-     * as expected.
-     */ 
-    void generateLoadStoreFVec(bool useMask);
-
-};
-
-
-string 
-GenerateInstructions::getExecutableDirectory()
-{
-  char path[PATH_MAX];
-  size_t last_slash;
-  /* Read the target of /proc/self/exe.  */
-  if (readlink("/proc/self/exe", path, sizeof(path)-1) <= 0) {
-    perror("Hmmm... directory of the generate_test.exe could not be deterimed."
-           " Abort!");
-    exit(1);
-  }
-  
-  string pathStr = string(path);
-  
-  if ((last_slash = pathStr.find_last_of("/")) == string::npos) {
-    perror("Hmmm... the directory path does not have a '\', how so? Abort!");
-    exit(1);
-  }
-
-  pathStr = pathStr.substr(0, last_slash);
-  return pathStr;
-}
-
-
-void 
-GenerateInstructions::createTestDir()
-{
-    string directoryPath =  getExecutableDirectory();
-    this->outPath        = directoryPath.append("/test_fns");
-    const char * path    = outPath.c_str();
-
-    struct stat st = {0};
-    int status;
-
-    if (stat(path, &st) == -1) {
-        if ((status =  mkdir(path, 0700)) == -1) {
-          perror("Could not build directory for the test functions. Abort!");
-          exit(1);
-        }
-    }
-    else {
-        string remove =string("rm -fr ").append(path);
-        system(remove.c_str());
-        if ((status =  mkdir(path, 0700)) == -1) {
-            perror("Could not build directory for the test functions. Abort!");
-            exit(1);
-        }
-    }
+    createTestDir();
 }
 
 /**
@@ -135,10 +31,11 @@ GenerateInstructions::createTestDir()
  * elements in c, and store the results in dst. 
  */
 void 
-GenerateInstructions::generateFnMadd(bool useMask)
+GenerateTestFns::generateFnMadd(bool useMask)
 {
+    string _tmp(outPath); 
     ofstream ofs;
-    ofs.open(outPath.append("/gen_fnMadd.h").c_str(), ofstream::out | ofstream::app);
+    ofs.open(_tmp.append("/gen_fnMadd.h").c_str(), ofstream::out | ofstream::app);
 
     InstVector ivector;  
     FVec avec("avec");
@@ -204,10 +101,11 @@ GenerateInstructions::generateFnMadd(bool useMask)
  * elements in c, and store the results in dst. 
  */
 void 
-GenerateInstructions::generateFMadd(bool useMask)
+GenerateTestFns::generateFMadd(bool useMask)
 {
+    string _tmp(outPath); 
     ofstream ofs;
-    ofs.open(outPath.append("/gen_fMadd.h").c_str(), ofstream::out | ofstream::app);
+    ofs.open(_tmp.append("/gen_fMadd.h").c_str(), ofstream::out | ofstream::app);
 
     InstVector ivector;  
     FVec avec("avec");
@@ -271,11 +169,11 @@ GenerateInstructions::generateFMadd(bool useMask)
  * results in dst.
  */
 void 
-GenerateInstructions::generateSub(bool useMask)
+GenerateTestFns::generateSub(bool useMask)
 {
-
+    string _tmp(outPath); 
     ofstream ofs;
-    ofs.open(outPath.append("/gen_sub.h").c_str(), ofstream::out | ofstream::app);
+    ofs.open(_tmp.append("/gen_sub.h").c_str(), ofstream::out | ofstream::app);
 
     InstVector ivector;  
     FVec avec("avec");
@@ -332,10 +230,11 @@ GenerateInstructions::generateSub(bool useMask)
  * and store the results in dst.
  */
 void 
-GenerateInstructions::generateAdd(bool useMask)
+GenerateTestFns::generateAdd(bool useMask)
 {
+    string _tmp(outPath); 
     ofstream ofs;
-    ofs.open(outPath.append("/gen_add.h").c_str(), ofstream::out | ofstream::app);
+    ofs.open(_tmp.append("/gen_add.h").c_str(), ofstream::out | ofstream::app);
 
     InstVector ivector;  
     FVec avec("avec");
@@ -392,10 +291,11 @@ GenerateInstructions::generateAdd(bool useMask)
  * and store the results in dst. 
  */
 void 
-GenerateInstructions::generateMul(bool useMask)
+GenerateTestFns::generateMul(bool useMask)
 {
+    string _tmp(outPath); 
     ofstream ofs;
-    ofs.open(outPath.append("/gen_mul.h").c_str(), ofstream::out | ofstream::app);    
+    ofs.open(_tmp.append("/gen_mul.h").c_str(), ofstream::out | ofstream::app);    
 
     InstVector ivector;  
     FVec avec("avec");
@@ -450,9 +350,10 @@ GenerateInstructions::generateMul(bool useMask)
  * Return vector with all elements set to zero.
  */
 void 
-GenerateInstructions::generateSetZero()
+GenerateTestFns::generateSetZero()
 {
-    ofstream out(outPath.append("/gen_setzero.h").c_str());
+    string _tmp(outPath); 
+    ofstream out(_tmp.append("/gen_setzero.h").c_str());
 
     InstVector ivector;
     FVec retvec("retvec");
@@ -483,10 +384,11 @@ GenerateInstructions::generateSetZero()
  * The interesting test is to ensure the blended load is working as expected.
  */ 
 void 
-GenerateInstructions::generateLoadStoreFVec(bool useMask)
+GenerateTestFns::generateLoadStoreFVec(bool useMask)
 {
+    string _tmp(outPath); 
     ofstream ofs;
-    ofs.open(outPath.append("/gen_ld_st.h").c_str(), ofstream::out | ofstream::app);    
+    ofs.open(_tmp.append("/gen_ld_st.h").c_str(), ofstream::out | ofstream::app);    
 
     InstVector ivector;  
     FVec ldvec("ldvec");
@@ -529,10 +431,61 @@ GenerateInstructions::generateLoadStoreFVec(bool useMask)
     ofs.close();    
 }
 
+/************************** Private helper functions **************************/
+string 
+GenerateTestFns::getExecutableDirectory()
+{
+  char path[PATH_MAX];
+  size_t last_slash;
+  /* Read the target of /proc/self/exe.  */
+  if (readlink("/proc/self/exe", path, sizeof(path)-1) <= 0) {
+    perror("Hmmm... directory of the generate_test.exe could not be deterimed."
+           " Abort!");
+    exit(1);
+  }
+  
+  string pathStr = string(path);
+  
+  if ((last_slash = pathStr.find_last_of("/")) == string::npos) {
+    perror("Hmmm... the directory path does not have a '\', how so? Abort!");
+    exit(1);
+  }
 
+  pathStr = pathStr.substr(0, last_slash);
+  return pathStr;
+}
+
+
+void 
+GenerateTestFns::createTestDir()
+{
+    string directoryPath =  getExecutableDirectory();
+    this->outPath        = directoryPath.append("/test_fns");
+    const char * path    = this->outPath.c_str();
+
+    struct stat st = {0};
+    int status;
+
+    if (stat(path, &st) == -1) {
+        if ((status =  mkdir(path, 0700)) == -1) {
+          perror("Could not build directory for the test functions. Abort!");
+          exit(1);
+        }
+    }
+    else {
+        string remove = string("rm -fr ").append(path);
+        system(remove.c_str());
+        if ((status =  mkdir(path, 0700)) == -1) {
+            perror("Could not build directory for the test functions. Abort!");
+            exit(1);
+        }
+    }
+}
+
+/********************************* Main function ******************************/
 int main(int argc, char *argv[])
 {
-    GenerateInstructions genInst;
+    GenerateTestFns genInst;
     genInst.generateLoadStoreFVec(false);
     genInst.generateLoadStoreFVec(true);
     genInst.generateFnMadd(false);
