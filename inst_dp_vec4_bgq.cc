@@ -1,6 +1,3 @@
-//TODO : _mm256_blendv_pd : reimplement for bg/q
-//TODO : get a small test suite going to verify the intrinsic functions
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "instructions.h"
@@ -10,6 +7,15 @@
 
 #define FVECTYPE "__vector4double"
 
+static inline void err_msg()
+{
+    buf << "#error \"halftype is not supported (yet) in the QPX backend\"" <<endl;
+    printf("halftype is not supported (yet) in the QPX backend\n");
+    exit(1);
+
+}
+
+   
 const string fullIntMask("0xF");
 const string fullMask("0xF");
 
@@ -27,16 +33,16 @@ string InitFVec::serialize() const
     return v.getName()+ " = vec_splats(0.0);";
 }
 
-/*
+
 string DeclareMask::serialize() const
 {
     ostringstream outbuf;
 
     if(value.empty()) {
-        outbuf << "__m256d " << name << ";" << endl;
+        outbuf << "__vector4double " << name << ";" << endl;
     }
     else {
-        outbuf << "__m256d " << name << " = " << value << ";" << endl;
+        outbuf << "__vector4double " << name << " = " << value << ";" << endl;
     }
 
     return outbuf.str();
@@ -45,10 +51,11 @@ string DeclareMask::serialize() const
 string IntToMask::serialize() const
 {
     ostringstream outbuf;
-    outbuf << mask << " = _mm256_int2mask_pd(" << value << ");" << endl;
+    outbuf << mask << " = _v4d_int2mask(" << value << ");" << endl;
     return outbuf.str();
 }
 
+/*
 string DeclareOffsets::serialize() const
 {
     ostringstream outbuf;
@@ -56,29 +63,39 @@ string DeclareOffsets::serialize() const
     return outbuf.str();
 }
 */
+
 string IfAllOneCond::serialize() const
 {
     return " if ((" + condition + " & " + fullIntMask + ") == " + fullIntMask + ") { ";
 }
-/*
+
 string LoadFVec::serialize() const
 {
     std::ostringstream buf;
 
     if(mask.empty()) {
         if(!a->isHalfType()) {
-            buf << v.getName() << " = _mm256_load_pd(" << a->serialize() << ");" <<endl;
+            buf << v.getName() << " = vec_lda(" 0, << a->serialize() << ");" <<endl;
         }
         else {
-            buf << v.getName() << " = _mm256_cvtps_pd(_mm_load_ps(" << a->serialize() << "));" <<endl;
+            err_msg();
+            //buf << v.getName() << " = _mm256_cvtps_pd(_mm_load_ps(" << a->serialize() << "));" <<endl;
         }
     }
     else {
         if(!a->isHalfType()) {
-            buf << v.getName() << " = _mm256_maskload_pd(" << a->serialize() << ", _mm256_castpd_si256(" << mask << "));" <<endl;
+            /* Define a zero vector. */
+            buf << v.getType() << " zeroVec = vec_splats(0.0);" << endl; 
+            /* Load the vector from memory. */
+            buf << v.getName() << " = vec_lda(" 0, << a->serialize() << ");" << endl;
+            /* Blend with the zero vector. Retain the elements that have the 
+             * corresponding high bit set in the mask. //FIXME/TODO : Does
+             * the difference in the endian-ness of BGQ vs x86 play any role? */
+            buf << v.getName() << " = vec_perm( zeroVec, " << v.getName() << "," mask << ");" << endl;
         }
         else {
-            buf << v.getName() << " = _mm256_cvtps_pd(_mm_maskload_ps(" << a->serialize() << ", _mm_castps_si128(_mm256_cvtpd_ps(" << mask << "))));" <<endl;
+            err_msg();
+            //buf << v.getName() << " = _mm256_cvtps_pd(_mm_maskload_ps(" << a->serialize() << ", _mm_castps_si128(_mm256_cvtpd_ps(" << mask << "))));" <<endl;
         }
     }
 
@@ -90,27 +107,18 @@ string StoreFVec::serialize() const
 {
     ostringstream buf;
     int streaming = isStreaming;
+    //FIXME : Does QPX have an equivalent of AVX _mm256_stream_pd?
 
-    if(streaming) {
-        if(!a->isHalfType()) {
-            buf << "_mm256_stream_pd(" << a->serialize() << ", " << v.getName() <<  ");" <<endl;
-        }
-        else {
-            buf << "_mm_stream_ps(" << a->serialize() << ", _mm256_cvtpd_ps(" << v.getName() <<  "));" <<endl;
-        }
+    if(!a->isHalfType()) {
+        buf << "vec_sta("  v.getName() << ", 0, " << a->serialize() << ");" << endl;
     }
     else {
-        if(!a->isHalfType()) {
-            buf << "_mm256_store_pd(" << a->serialize() << ", " << v.getName() <<  ");" <<endl;
-        }
-        else {
-            buf << "_mm_store_ps(" << a->serialize() << ", _mm256_cvtpd_ps(" << v.getName() <<  "));" <<endl;
-        }
+        err_msg();
+        //buf << "_mm_stream_ps(" << a->serialize() << ", _mm256_cvtpd_ps(" << v.getName() <<  "));" <<endl;
     }
-
     return buf.str();
 }
-
+/*
 string GatherFVec::serialize() const
 {
     std::ostringstream buf;
@@ -135,12 +143,13 @@ string GatherFVec::serialize() const
     return buf.str();
 
 }
-
+*/
 string ScatterFVec::serialize() const
 {
     std::ostringstream buf;
-    buf << "#error \"scatter is not supported in AVX/AVX2\"" <<endl;
-    printf("scatter is not supported in AVX/AVX2\n");
+    // FIXME : Confirm that the below error message is true
+    buf << "#error \"scatter is not supported in QPX\"" <<endl;
+    printf("scatter is not supported in QPX\n");
     exit(1);
     return buf.str();
 }
@@ -150,15 +159,16 @@ string LoadBroadcast::serialize() const
     std::ostringstream buf;
 
     if(!a->isHalfType()) {
-        buf << v.getName() << " = _mm256_broadcast_sd(" << a->serialize() << ");" << endl;
+        buf << v.getName() << " = vec_splats(*" << a->serialize() << ");" << endl;
     }
     else {
-        buf << v.getName() << " = _mm256_cvtps_pd(_mm_broadcast_ss(" << a->serialize() << "));" << endl;
+        err_msg();
+        //buf << v.getName() << " = _mm256_cvtps_pd(_mm_broadcast_ss(" << a->serialize() << "));" << endl;
     }
 
     return buf.str();
 }
-
+/*
 PrefetchL1::PrefetchL1( const Address* a_, int type) : a(a_)
 {
     // Type: 0 - none, 1 - NT, 2 - Ex, 3 - NT+Ex
@@ -263,74 +273,48 @@ string Mul::serialize() const
         return  ret.getName()+" = vec_mul("+a.getName()+", "+b.getName()+");";
     }
     else {
-        //FIXME/TODO
-        return  ret.getName()+ " = _mm256_blendv_pd(" + ret.getName() + ", vec_mul( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
+        return  ret.getName()+ " = vec_perm(" + ret.getName() + ", vec_mul( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
     }
 }
-/*
+
 string FnMAdd::serialize() const
 {
-#ifndef AVX2
-
     if(mask.empty()) {
-        return  ret.getName()+" = _mm256_sub_pd("+c.getName()+", _mm256_mul_pd("+a.getName()+" , "+b.getName()+"));" ;
+        return  ret.getName()+" = vec_madd( vec_neg("+a.getName()+"), "+b.getName()+" , "+c.getName()+" );" ;
     }
     else {
-        return  ret.getName()+" = _mm256_blendv_pd(" + ret.getName() + ", _mm256_sub_pd("+c.getName()+", _mm256_mul_pd("+a.getName()+" , "+b.getName()+")), " + mask + ");" ;
+        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_madd( vec_neg("+a.getName()+") , "+b.getName()+" , "+c.getName()+" ), " + mask + ");" ;
     }
 
-#else
-
-    if(mask.empty()) {
-        return  ret.getName()+" = _mm256_fnmadd_pd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" );" ;
-    }
-    else {
-        return  ret.getName()+" = _mm256_blendv_pd(" + ret.getName() + ", _mm256_fnmadd_pd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" ), " + mask + ");" ;
-    }
-
-#endif
 }
 
 string FMAdd::serialize() const
 {
-#ifndef AVX2
-
     if(mask.empty()) {
-        return  ret.getName()+" = _mm256_add_pd(_mm256_mul_pd("+a.getName()+", "+b.getName()+"), "+c.getName()+" );" ;
+        return  ret.getName()+" = vec_madd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" );" ;
     }
     else {
-        return  ret.getName()+" = _mm256_blendv_pd(" + ret.getName() + ", _mm256_add_pd(_mm256_mul_pd("+a.getName()+", "+b.getName()+"), "+c.getName()+"), " + mask + ");" ;
+        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_madd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" ), " + mask + ");" ;
     }
-
-#else
-
-    if(mask.empty()) {
-        return  ret.getName()+" = _mm256_fmadd_pd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" );" ;
-    }
-    else {
-        return  ret.getName()+" =_mm256_blendv_pd(" + ret.getName() + ", _mm256_fmadd_pd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" ), " + mask + ");" ;
-    }
-
-#endif
 }
 
 string Add::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+" = _mm256_add_pd( "+a.getName()+" , "+b.getName()+" );" ;
+        return  ret.getName()+" = vec_add( "+a.getName()+" , "+b.getName()+" );" ;
     }
     else {
-        return  ret.getName()+" = _mm256_blendv_pd(" + ret.getName() + ", _mm256_add_pd( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
+        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_add( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
     }
 }
 
 string Sub::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+" = _mm256_sub_pd( "+a.getName()+" , "+b.getName()+" );" ;
+        return  ret.getName()+" = vec_sub( "+a.getName()+" , "+b.getName()+" );" ;
     }
     else {
-        return  ret.getName()+" = _mm256_blendv_pd(" + ret.getName() + ", _mm256_sub_pd( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
+        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_sub( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
     }
 }
 
@@ -340,10 +324,10 @@ string MovFVec::serialize() const
         return  ret.getName()+" = " + a.getName()+";" ;
     }
     else {
-        return ret.getName()+" = _mm256_blendv_pd(" + ret.getName() + ", "+a.getName()+", " + mask + ");" ;
+        return ret.getName()+" = vec_perm(" + ret.getName() + ", "+a.getName()+", " + mask + ");" ;
     }
 }
-
+/*
 class Perm64x2 : public Instruction
 {
 public:

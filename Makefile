@@ -184,10 +184,10 @@ generate_test: testsuite/generate_test.cc libcodegen.a
 	$(CXXHOST) $(DEFS) -I. testsuite/generate_test.cc -o testsuite/$@.exe -L. -lcodegen
 
 generate_test_files: generate_test
-	testsuite/generate_test
+	testsuite/generate_test.exe
 
 run_tests: testsuite/run_tests.cc
 	$(CXXHOST) $(DEFS) -I. $< -o testsuite/$@.exe
 
 do_tests: run_tests generate_test_files
-	testsuite/run_tests
+	testsuite/run_tests.exe
