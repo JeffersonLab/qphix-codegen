@@ -37,6 +37,8 @@ std::string ARCH_NAME="mic";
 #elif VECLEN == 4
 #ifdef AVX2
 std::string ARCH_NAME="avx2";
+#elif QPX
+std::string ARCH_NAME="qpx";
 #else
 std::string ARCH_NAME="avx";
 #endif
@@ -47,7 +49,10 @@ std::string ARCH_NAME="scalar";
 #endif
 #endif //PRECISION
 
+#ifndef QPX
 void mergeIvectorWithL2Prefetches(InstVector& ivector, InstVector& l2prefs);
+#endif
+
 void dumpIVector(InstVector& ivector, string filename);
 
 string dirname[2] = {"back", "forw"};
@@ -355,6 +360,8 @@ string getTypeName(size_t s)
 
 void generate_code(void)
 {
+    std::cout << "ARCH_NAME : " << ARCH_NAME << std::endl;
+ 
     InstVector ivector;
     InstVector l2prefs;
     bool compress12;
@@ -399,12 +406,19 @@ void generate_code(void)
 
                 // Generate instructions
                 dslash_plain_body(ivector,compress12,clover,isPlus);
+#ifndef QPX
                 mergeIvectorWithL2Prefetches(ivector, l2prefs);
+#endif
                 dumpIVector(ivector,filename.str());
 
                 filename.str("");
                 filename.clear();
-                filename << "./"<<ARCH_NAME<<"/" << clov_prefix << "dslash_achimbdpsi_"<<plusminus<<"_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+                filename << "./"<<ARCH_NAME<<"/" 
+                         << clov_prefix << "dslash_achimbdpsi_"
+                         << plusminus << "_body_" << SpinorTypeName 
+                         << "_" << GaugeTypeName << "_v" 
+                         << VECLEN << "_s" << SOALEN 
+                         << "_" << num_components;
 
                 l2prefs.resize(0);
                 generateL2Prefetches(l2prefs,compress12, true, clover);
@@ -415,7 +429,9 @@ void generate_code(void)
 
                 // Generate instructions
                 dslash_achimbdpsi_body(ivector,compress12,clover,isPlus);
+#ifndef QPX
                 mergeIvectorWithL2Prefetches(ivector, l2prefs);
+#endif
                 dumpIVector(ivector,filename.str());
 
                 for(int dir = 0; dir < 2; dir++) {
@@ -427,7 +443,9 @@ void generate_code(void)
                         recons_add_face_from_dir_dim_vec(ivector, compress12,isPlus, dir, dim, clover);
                         l2prefs.resize(0);
                         generateFaceUnpackL2Prefetches(l2prefs, 2*dim+dir, compress12, clover);
+#ifndef QPX
                         mergeIvectorWithL2Prefetches(ivector, l2prefs);
+#endif
                         dumpIVector(ivector,filename.str());
                     }
                 }
@@ -443,7 +461,9 @@ void generate_code(void)
                 generateFacePackL2Prefetches(l2prefs, 2*dim+dir);
                 ivector.resize(0);
                 pack_face_to_dir_dim_vec(ivector,isPlus,dir,dim);
+#ifndef QPX
                 mergeIvectorWithL2Prefetches(ivector, l2prefs);
+#endif
                 dumpIVector(ivector,filename.str());
             }
         }

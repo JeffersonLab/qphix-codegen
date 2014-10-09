@@ -1,5 +1,4 @@
-
-mode=avx
+mode=qpx
 
 mode:=$(strip $(mode))
 ARCH=$(mode)
@@ -7,8 +6,12 @@ ARCH=$(mode)
 CONFFILE=customMake.$(mode)
 include $(CONFFILE)
 
+ifeq ($(mode),qpx)
+CXXHOST = bgclang++11 -O3 -g -Wall 
+else
 #CXXHOST  = icpc -O3 -g
 CXXHOST = g++ -O3 -g -march=corei7-avx -Wall
+endif
 
 ifeq ($(mode),mic)
 ifeq ($(PRECISION),1)
@@ -27,6 +30,13 @@ override VECLEN=4
 endif
 DEFS += -DNO_HW_MASKING
 yesnolist += AVX2
+endif
+
+ifeq ($(mode), qpx)
+override VECLEN=4
+override PRECISION=2
+override SOALEN=4
+yesnolist += QPX
 endif
 
 ifeq ($(mode),sse)
@@ -96,8 +106,14 @@ DEFS += $(strip $(foreach var, $(yesnolist), $(if $(filter 1, $($(var))), -D$(va
 DEFS += $(strip $(foreach var, $(deflist), $(if $($(var)), -D$(var)=$($(var)))))
 
 SOURCES = codegen.cc dslash.cc dslash_common.cc
+
+ifeq ($(mode), qpx)
+CODEGEN_SOURCES = data_types.cc inst_dp_vec4_qpx.cc
+CODEGEN_OBJS = data_types.o inst_dp_vec4_qpx.o
+else
 CODEGEN_SOURCES = data_types.cc inst_dp_vec8.cc inst_sp_vec16.cc inst_dp_vec4.cc inst_sp_vec8.cc inst_sp_vec4.cc inst_dp_vec2.cc inst_scalar.cc
 CODEGEN_OBJS = data_types.o inst_dp_vec8.o inst_sp_vec16.o inst_dp_vec4.o inst_sp_vec8.o inst_sp_vec4.o inst_dp_vec2.o inst_scalar.o
+endif
 
 HEADERS = address_types.h  data_types.h  dslash.h  instructions.h Makefile $(CONFFILE)
 
@@ -113,9 +129,9 @@ codegen: $(SOURCES) libcodegen.a
 .cc.o:
 	$(CXXHOST) $(DEFS) -I. -c $< 
 
-.PHONY: cgen mic avx avx2 avx512 sse scalar
+.PHONY: cgen mic avx avx2 avx512 sse scalar qpx
 
-cgen: mic avx avx2 avx512 sse scalar
+cgen: mic avx avx2 avx512 sse scalar qpx
 
 mic:
 	mkdir -p ./mic
@@ -165,6 +181,10 @@ scalar:
 	mkdir -p ./scalar
 	@make clean && make mode=scalar PRECISION=2 && ./codegen
 	@make clean && make mode=scalar PRECISION=1 && ./codegen
+
+qpx:
+	mkdir -p ./qpx
+	@make clean && make mode=qpx PRECISION=2 && ./codegen
 
 clean: 
 	rm -rf *.o ./codegen 

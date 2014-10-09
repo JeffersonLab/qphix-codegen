@@ -366,10 +366,14 @@ public:
 
     string serialize() const
     {
+#if ARCH != bgq
         ostringstream stream;
         stream << " _mm_prefetch((const char *)( " << a->serialize() 
                << " ), " << hint << ");" << endl;
         return stream.str();
+#else
+	return "";
+#endif
     }
 
     MemRefType getType() const
@@ -396,10 +400,14 @@ public:
     PrefetchL2( const Address* a_, int type = 0);
     string serialize() const
     {
+#if ARCH != bgq
         ostringstream stream;
         stream << " _mm_prefetch((const char *)( " << a->serialize() << " ), " 
                << hint << ");" << endl;
         return stream.str();
+#else
+	return "";
+#endif
     }
 
     MemRefType getType() const

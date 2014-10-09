@@ -33,3 +33,11 @@ codegen
 
 # Ignore the generated testfiles
 testsuite/test_fns
+
+
+# Ignore generated code directories
+qpx
+avx
+scalar
+avx2 
+mic

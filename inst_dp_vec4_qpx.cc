@@ -8,13 +8,6 @@
 #define FVECTYPE "__vector4double"
 using namespace std;
 
-static inline void err_msg(ostringstream buf)
-{
-    buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
-        << endl;
-    printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
-    exit(1);
-}
 
 const string fullIntMask("0xF");
 const string fullMask("0xF");
@@ -75,11 +68,15 @@ string LoadFVec::serialize() const
 
     if(mask.empty()) {
         if(!a->isHalfType()) {
-            buf << v.getName() << " = vec_lda(" 0, << a->serialize() << ");" <<endl;
+            buf << v.getName() << " = vec_lda(0," << a->serialize() << ");" <<endl;
         }
         else {
             //FIXME
-            err_msg(buf);
+            buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+                << endl;
+            printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+            exit(1);
+
             //buf << v.getName() << " = _mm256_cvtps_pd(_mm_load_ps(" << a->serialize() << "));" <<endl;
         }
     }
@@ -88,15 +85,18 @@ string LoadFVec::serialize() const
             /* Define a zero vector. */
             buf << v.getType() << " zeroVec = vec_splats(0.0);" << endl; 
             /* Load the vector from memory. */
-            buf << v.getName() << " = vec_lda(" 0, << a->serialize() << ");" << endl;
+            buf << v.getName() << " = vec_lda(0, " << a->serialize() << ");" << endl;
             /* Blend with the zero vector. Retain the elements that have the 
              * corresponding high bit set in the mask. 
              */
-            buf << v.getName() << " = vec_perm( zeroVec, " << v.getName() << "," mask << ");" << endl;
+            buf << v.getName() << " = vec_perm( zeroVec, " << v.getName() << "," << mask << ");" << endl;
         }
         else {
             //FIXME
-            err_msg(buf);
+            buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+	        << endl;
+	    printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+	    exit(1);
             //buf << v.getName() << " = _mm256_cvtps_pd(_mm_maskload_ps(" << a->serialize() << ", _mm_castps_si128(_mm256_cvtpd_ps(" << mask << "))));" <<endl;
         }
     }
@@ -111,11 +111,15 @@ string StoreFVec::serialize() const
     int streaming = isStreaming;
     //TODO : Does QPX have an equivalent of AVX _mm256_stream_pd?
     if(!a->isHalfType()) {
-        buf << "vec_sta("  v.getName() << ", 0, " << a->serialize() << ");" << endl;
+      buf << "vec_sta("  << v.getName() << ", 0, " << a->serialize() << ");" << endl;
     }
     else {
         //FIXME
-        err_msg(buf);
+        buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+            << endl;
+        printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+        exit(1);
+
         //buf << "_mm_stream_ps(" << a->serialize() << ", _mm256_cvtpd_ps(" << v.getName() <<  "));" <<endl;
     }
     return buf.str();
@@ -167,13 +171,22 @@ string LoadBroadcast::serialize() const
     }
     else {
         //FIXME
-        err_msg(buf);
+        buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+            << endl;
+        printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+        exit(1);
+
         //buf << v.getName() << " = _mm256_cvtps_pd(_mm_broadcast_ss(" << a->serialize() << "));" << endl;
     }
 
     return buf.str();
 }
-/*
+
+// FIXME : Letting this be so that the code compiles. For BGQ these hints
+// are meaningless. We also emit an empty string on serialization, so should
+// be harmless.
+//
+// TODO: Recode the L1 prefetcher in the BGQ way.
 PrefetchL1::PrefetchL1( const Address* a_, int type) : a(a_)
 {
     // Type: 0 - none, 1 - NT, 2 - Ex, 3 - NT+Ex
@@ -196,6 +209,12 @@ PrefetchL1::PrefetchL1( const Address* a_, int type) : a(a_)
     }
 }
 
+
+// FIXME : Letting this be so that the code compiles. For BGQ these hints
+// are meaningless. We also emit an empty string on serialization, so should
+// be harmless.
+//
+// TODO: Recode the L2 prefetcher in the BGQ way.
 PrefetchL2::PrefetchL2( const Address* a_, int type) : a(a_)
 {
     // Type: 0 - none, 1 - NT, 2 - Ex, 3 - NT+Ex
@@ -241,7 +260,7 @@ string GatherPrefetchL1::serialize() const
     exit(1);
     return buf.str();
 }
-
+/*
 GatherPrefetchL2::GatherPrefetchL2( const GatherAddress* a_, int type) : a(a_)
 {
     // Type: 0 - none, 1 - NT, 2 - Ex, 3 - NT+Ex
@@ -511,7 +530,11 @@ public:
             }
         }
         else {
-            err_msg(buf);
+            buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+                << endl;
+            printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+            exit(1);
+
             //FIXME
             /*
             if(forward) {
@@ -585,7 +608,11 @@ public:
         }
         else {
             //FIXME
-            err_msg(buf);
+            buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+                << endl;
+            printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+            exit(1);
+
             //buf << v.getName() << " = _mm256_blend_pd(" << v.getName() << ", _mm256_cvtps_pd(_mm_broadcast_ss(" << a->serialize() << ")), " << (1<<pos) << ");" << endl;
         }
 
@@ -629,7 +656,7 @@ public:
             if(pos % 2 == 0) {
                 //TODO
                 buf << "vec_st(" << a->serialize() << ", 0, "
-                    << "_mm256_extractf128_pd(" << v.getName() << ", " << pos / 2 << ")
+                    << "_mm256_extractf128_pd(" << v.getName() << ", " << pos / 2 << ")"
                     << ");" << endl;
             }
             else {
@@ -639,7 +666,11 @@ public:
         }
         else {
             //FIXME
-            err_msg(buf);
+            buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+                << endl;
+            printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+            exit(1);
+
             //buf << "((int*)" << a->serialize() << ")[0] = _mm_extract_ps(_mm256_cvtpd_ps(" << v.getName() << "), " << pos << ");" << endl;
         }
 
@@ -749,8 +780,10 @@ void packFVec(InstVector& ivector
 {
     int pos = 0, nBits = 0;
 
-    for(int i = 0; i < 4; i++) if(possibleMask & (1 << i)) {
+    for(int i = 0; i < 4; i++) {
+        if(possibleMask & (1 << i)) {
             nBits++;
+        }
     }
 
     for(int i = 0; i < 4; i++) {

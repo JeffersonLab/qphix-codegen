@@ -14,6 +14,10 @@ using namespace std;
 
 void generate_code(void);
 
+/* FIXME: For the time being prefetching is not enabled on BGQ, so
+ * leave out the mergeIvectorWithL2Prefetches.
+ */
+#ifndef QPX
 // Merge L2 prefetches with another instruction stream
 void mergeIvectorWithL2Prefetches(InstVector& ivector, InstVector& l2prefs)
 {
@@ -86,6 +90,7 @@ void mergeIvectorWithL2Prefetches(InstVector& ivector, InstVector& l2prefs)
     }
 }
 
+#endif
 
 // Dump an instruction stream into a file
 void dumpIVector(InstVector& ivector, string filename)
