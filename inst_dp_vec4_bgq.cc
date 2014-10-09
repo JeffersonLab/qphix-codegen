@@ -6,16 +6,16 @@
 #pragma message "Using BGQ double Precision"
 
 #define FVECTYPE "__vector4double"
+using namespace std;
 
-static inline void err_msg()
+static inline void err_msg(ostringstream buf)
 {
-    buf << "#error \"halftype is not supported (yet) in the QPX backend\"" <<endl;
-    printf("halftype is not supported (yet) in the QPX backend\n");
+    buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
+        << endl;
+    printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
     exit(1);
-
 }
 
-   
 const string fullIntMask("0xF");
 const string fullMask("0xF");
 
@@ -78,7 +78,8 @@ string LoadFVec::serialize() const
             buf << v.getName() << " = vec_lda(" 0, << a->serialize() << ");" <<endl;
         }
         else {
-            err_msg();
+            //FIXME
+            err_msg(buf);
             //buf << v.getName() << " = _mm256_cvtps_pd(_mm_load_ps(" << a->serialize() << "));" <<endl;
         }
     }
@@ -89,12 +90,13 @@ string LoadFVec::serialize() const
             /* Load the vector from memory. */
             buf << v.getName() << " = vec_lda(" 0, << a->serialize() << ");" << endl;
             /* Blend with the zero vector. Retain the elements that have the 
-             * corresponding high bit set in the mask. //FIXME/TODO : Does
-             * the difference in the endian-ness of BGQ vs x86 play any role? */
+             * corresponding high bit set in the mask. 
+             */
             buf << v.getName() << " = vec_perm( zeroVec, " << v.getName() << "," mask << ");" << endl;
         }
         else {
-            err_msg();
+            //FIXME
+            err_msg(buf);
             //buf << v.getName() << " = _mm256_cvtps_pd(_mm_maskload_ps(" << a->serialize() << ", _mm_castps_si128(_mm256_cvtpd_ps(" << mask << "))));" <<endl;
         }
     }
@@ -107,17 +109,19 @@ string StoreFVec::serialize() const
 {
     ostringstream buf;
     int streaming = isStreaming;
-    //FIXME : Does QPX have an equivalent of AVX _mm256_stream_pd?
-
+    //TODO : Does QPX have an equivalent of AVX _mm256_stream_pd?
     if(!a->isHalfType()) {
         buf << "vec_sta("  v.getName() << ", 0, " << a->serialize() << ");" << endl;
     }
     else {
-        err_msg();
+        //FIXME
+        err_msg(buf);
         //buf << "_mm_stream_ps(" << a->serialize() << ", _mm256_cvtpd_ps(" << v.getName() <<  "));" <<endl;
     }
     return buf.str();
 }
+
+// FIXME : Not being used for dslash AVX backend. Not needed for QPX as well?
 /*
 string GatherFVec::serialize() const
 {
@@ -162,7 +166,8 @@ string LoadBroadcast::serialize() const
         buf << v.getName() << " = vec_splats(*" << a->serialize() << ");" << endl;
     }
     else {
-        err_msg();
+        //FIXME
+        err_msg(buf);
         //buf << v.getName() << " = _mm256_cvtps_pd(_mm_broadcast_ss(" << a->serialize() << "));" << endl;
     }
 
@@ -264,26 +269,37 @@ string GatherPrefetchL2::serialize() const
 */
 string SetZero::serialize() const
 {
-    return  ret.getName()+" = vec_splats(0.0); ";
+    return  ret.getName() + " = vec_splats(0.0); ";
 }
 
 string Mul::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+" = vec_mul("+a.getName()+", "+b.getName()+");";
+        return  ret.getName() + " = vec_mul(" 
+                              + a.getName() + ", " 
+                              + b.getName() + ");";
     }
     else {
-        return  ret.getName()+ " = vec_perm(" + ret.getName() + ", vec_mul( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
+        return  ret.getName() + " = vec_perm(" + ret.getName() 
+                              + ", vec_mul( "
+                              + a.getName()+" , "
+                              + b.getName()+"), " + mask + ");";
     }
 }
 
 string FnMAdd::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+" = vec_madd( vec_neg("+a.getName()+"), "+b.getName()+" , "+c.getName()+" );" ;
+        return  ret.getName()+ " = vec_madd(vec_neg(" 
+                             + a.getName() + ") ,"
+                             + b.getName() + " ," 
+                             + c.getName() + " );";
     }
     else {
-        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_madd( vec_neg("+a.getName()+") , "+b.getName()+" , "+c.getName()+" ), " + mask + ");" ;
+        return  ret.getName()+" = vec_perm(" + ret.getName() 
+                             + ", vec_madd(vec_neg("+a.getName()+") ,"
+                             + b.getName() + " ,"
+                             + c.getName() + " ) ," + mask + ");";
     }
 
 }
@@ -291,30 +307,48 @@ string FnMAdd::serialize() const
 string FMAdd::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+" = vec_madd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" );" ;
+        return  ret.getName() + " = vec_madd(" 
+                              + a.getName() 
+                              + " ," 
+                              + b.getName()
+                              + " ,"
+                              + c.getName() + ");";
     }
     else {
-        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_madd( "+a.getName()+" , "+b.getName()+" , "+c.getName()+" ), " + mask + ");" ;
+        return  ret.getName() + " = vec_perm(" 
+                              + ret.getName() 
+                              + ", vec_madd("
+                              + a.getName()
+                              + " ,"
+                              + b.getName() + " ," 
+                              + c.getName() + " )," 
+                              + mask + ");" ;
     }
 }
 
 string Add::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+" = vec_add( "+a.getName()+" , "+b.getName()+" );" ;
+        return  ret.getName() + " = vec_add( "+a.getName() 
+                              + " , "+b.getName()+" );";
     }
     else {
-        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_add( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
+        return  ret.getName() + " = vec_perm(" + ret.getName() 
+                              + ", vec_add("+a.getName()
+                              + " , "+b.getName()+"), " + mask + ");";
     }
 }
 
 string Sub::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+" = vec_sub( "+a.getName()+" , "+b.getName()+" );" ;
+        return  ret.getName() + " = vec_sub("+a.getName() 
+                              + " , "+b.getName()+" );";
     }
     else {
-        return  ret.getName()+" = vec_perm(" + ret.getName() + ", vec_sub( "+a.getName()+" , "+b.getName()+"), " + mask + ");" ;
+        return  ret.getName() + " = vec_perm(" + ret.getName() 
+                              + ", vec_sub(" + a.getName()+", " + b.getName()
+                              + "), " + mask + ");";
     }
 }
 
@@ -324,20 +358,28 @@ string MovFVec::serialize() const
         return  ret.getName()+" = " + a.getName()+";" ;
     }
     else {
-        return ret.getName()+" = vec_perm(" + ret.getName() + ", "+a.getName()+", " + mask + ");" ;
+        return ret.getName() + " = vec_perm(" + ret.getName() 
+                             + ", " + a.getName() + ", " + mask + ");";
     }
 }
+//FIXME : Add support for Perm64x2 once SOALEN support is added to QPX backend
 /*
 class Perm64x2 : public Instruction
 {
 public:
-    Perm64x2(const FVec& ret_, const FVec& a_, const FVec& b_, int imm_) : ret(ret_), a(a_), b(b_), imm(imm_) {}
+    Perm64x2(const FVec& ret_
+           , const FVec& a_
+           , const FVec& b_
+           , int imm_) : ret(ret_), a(a_), b(b_), imm(imm_) {}
+           
     string serialize() const
     {
         ostringstream stream;
-        stream << ret.getName() << " = _mm256_permute2f128_pd(" << a.getName() << ", "  << b.getName() << ", " << imm << ");" ;
+        stream << ret.getName() << " = _mm256_permute2f128_pd(" 
+               << a.getName() << ", "  << b.getName() << ", " << imm << ");" ;
         return stream.str();
     }
+    
     int numArithmeticInst() const
     {
         return 0;
@@ -348,7 +390,9 @@ private:
     const FVec b;
     int imm;
 };
-
+*/
+//FIXME : One we add support for HalfFVec to QPX backend
+/*
 class LoadHalfFVec : public MemRefInstruction
 {
 public:
@@ -410,11 +454,19 @@ private:
     const Address* a;
     const int num;
 };
-
+*/
 class LoadSplitSOAFVec : public MemRefInstruction
 {
 public:
-    LoadSplitSOAFVec( const FVec& v_, const Address* a1_, const Address* a2_, const int soanum_, const int soalen_, int forward_) : v(v_), a1(a1_), a2(a2_), soanum(soanum_), soalen(soalen_), forward(forward_) {}
+    LoadSplitSOAFVec( const FVec& v_
+                    , const Address* a1_
+                    , const Address* a2_
+                    , const int soanum_
+                    , const int soalen_
+                    , int forward_) 
+                    : v(v_), a1(a1_), a2(a2_), soanum(soanum_)
+                    , soalen(soalen_), forward(forward_) {}
+                    
     string serialize() const
     {
         std::ostringstream buf;
@@ -422,25 +474,46 @@ public:
         if(!a1->isHalfType()) {
             if(forward) {
                 if(soalen == 4) {
-                    buf << v.getName() << " =  _mm256_blend_pd(_mm256_loadu_pd(" << a1->serialize() << "), _mm256_broadcast_sd(" <<
-                        a2->serialize() << "), " << (1 << (soalen-1)) << ");" << endl;
+                    buf << v.getName() 
+                        << " =  vec_perm(" 
+                        << "vec_ld(" << a1->serialize() << "), "
+                        << "vec_splats(*" << a2->serialize() << "), "
+                        << "_v4d_int2mask("
+                        << (1 << (soalen-1)) << "));" 
+                        << endl;
                 }
                 else {
-                    buf << v.getName() << " =  _mm256_insertf128_pd(" << v.getName() <<
-                        ", _mm_blend_pd(_mm_loadu_pd(" << a1->serialize() << "), _mm_loaddup_pd(" << a2->serialize() << "), " << (1 << (soalen-1)) << "), " << soanum << ");" << endl;
+                     buf << "#error\"soalen 2 is not supported (yet) in the QPX backend\"" <<endl;
+                     printf("FIXME: soalen 2 is not supported (yet) in the QPX backend\n");
+                     exit(1);
+                     //FIXME
+                     //buf << v.getName() << " =  _mm256_insertf128_pd(" << v.getName() <<
+                     //   ", _mm_blend_pd(_mm_loadu_pd(" << a1->serialize() << "), _mm_loaddup_pd(" << a2->serialize() << "), " << (1 << (soalen-1)) << "), " << soanum << ");" << endl;
                 }
             }
             else {
                 if(soalen == 4) {
-                    buf << v.getName() << " =  _mm256_blend_pd(_mm256_loadu_pd((" << a2->serialize() << ")-1), _mm256_broadcast_sd(" << a1->serialize() << "), 1);" << endl;
+                    buf << v.getName() 
+                        << " =  vec_perm("
+                        << "vec_ld((" << a2->serialize() << ")-1), "
+                        << "vec_splats(*" << a1->serialize() << "), "
+                        << " _v4d_int2mask(1));" 
+                        << endl;
                 }
+                //FIXME
                 else {
-                    buf << v.getName() << " =  _mm256_insertf128_pd(" << v.getName() <<
-                        ", _mm_blend_pd(_mm_loadu_pd((" << a2->serialize() << ")-1), _mm_loaddup_pd(" << a1->serialize() << "), 1), " << soanum << ");" << endl;
+                    buf << "#error\"soalen 2 is not supported (yet) in the QPX backend\"" <<endl;
+                    printf("FIXME: soalen 2 is not supported (yet) in the QPX backend\n");
+                    exit(1);
+                    //buf << v.getName() << " =  _mm256_insertf128_pd(" << v.getName() <<
+                    //    ", _mm_blend_pd(_mm_loadu_pd((" << a2->serialize() << ")-1), _mm_loaddup_pd(" << a1->serialize() << "), 1), " << soanum << ");" << endl;
                 }
             }
         }
         else {
+            err_msg(buf);
+            //FIXME
+            /*
             if(forward) {
                 if(soalen == 4) {
                     buf << v.getName() << " =  _mm256_cvtps_pd(_mm_blend_ps(_mm_loadu_ps(" << a1->serialize() << "), _mm_broadcast_ss(" <<
@@ -459,15 +532,18 @@ public:
                     buf << v.getName() << " =  _mm256_insertf128_pd(" << v.getName() <<
                         ", _mm_cvtps_pd(_mm_blend_ps(_mm_loadu_ps((" << a2->serialize() << ")-1), _mm_broadcast_ss(" << a1->serialize() << "), 1)), " << soanum << ");" << endl;
                 }
-            }
+            } 
+            */
         }
 
         return buf.str();
     }
+    
     const Address* getAddress() const
     {
         return a1;
     }
+    
     MemRefType getType() const
     {
         return LOAD_MASKED_VEC;
@@ -483,7 +559,15 @@ private:
 class CondInsertFVecElement : public MemRefInstruction
 {
 public:
-    CondInsertFVecElement( const FVec& v_, const Address* a_, const string mask_, int pos_, bool skipCond_) : v(v_), a(a_), mask(mask_), pos(pos_), skipCond(skipCond_) {}
+    CondInsertFVecElement( const FVec& v_
+                         , const Address* a_
+                         , const string mask_
+                         , int pos_
+                         , bool skipCond_
+                         ) 
+                         : v(v_), a(a_), mask(mask_), pos(pos_)
+                         , skipCond(skipCond_) {}
+                         
     string serialize() const
     {
         std::ostringstream buf;
@@ -493,10 +577,16 @@ public:
         }
 
         if(!a->isHalfType()) {
-            buf << v.getName() << " = _mm256_blend_pd(" << v.getName() << ", _mm256_broadcast_sd(" << a->serialize() << "), " << (1<<pos) << ");" << endl;
+            
+            buf << v.getName() << " = vec_perm(" << v.getName() 
+                << ", vec_splats(*" << a->serialize() << ")" 
+                << ", _v4d_int2mask(" << (1 << pos) << ")"
+                << ");" << endl;
         }
         else {
-            buf << v.getName() << " = _mm256_blend_pd(" << v.getName() << ", _mm256_cvtps_pd(_mm_broadcast_ss(" << a->serialize() << ")), " << (1<<pos) << ");" << endl;
+            //FIXME
+            err_msg(buf);
+            //buf << v.getName() << " = _mm256_blend_pd(" << v.getName() << ", _mm256_cvtps_pd(_mm_broadcast_ss(" << a->serialize() << ")), " << (1<<pos) << ");" << endl;
         }
 
         return buf.str();
@@ -520,7 +610,13 @@ private:
 class CondExtractFVecElement : public MemRefInstruction
 {
 public:
-    CondExtractFVecElement( const FVec& v_, const Address* a_, const string mask_, int pos_, bool skipCond_) : v(v_), a(a_), mask(mask_), pos(pos_), skipCond(skipCond_) {}
+    CondExtractFVecElement( const FVec& v_
+                          , const Address* a_
+                          , const string mask_
+                          , int pos_
+                          , bool skipCond_) 
+                          : v(v_), a(a_), mask(mask_)
+                          , pos(pos_), skipCond(skipCond_) {}
     string serialize() const
     {
         std::ostringstream buf;
@@ -531,14 +627,20 @@ public:
 
         if(!a->isHalfType()) {
             if(pos % 2 == 0) {
-                buf << "_mm_store_sd(" << a->serialize() << ", _mm256_extractf128_pd(" << v.getName() << ", " << pos / 2 << "));" << endl;
+                //TODO
+                buf << "vec_st(" << a->serialize() << ", 0, "
+                    << "_mm256_extractf128_pd(" << v.getName() << ", " << pos / 2 << ")
+                    << ");" << endl;
             }
             else {
+                //TODO
                 buf << "_mm_storeh_pd(" << a->serialize() << ", _mm256_extractf128_pd(" << v.getName() << ", " << pos / 2 << "));" << endl;
             }
         }
         else {
-            buf << "((int*)" << a->serialize() << ")[0] = _mm_extract_ps(_mm256_cvtpd_ps(" << v.getName() << "), " << pos << ");" << endl;
+            //FIXME
+            err_msg(buf);
+            //buf << "((int*)" << a->serialize() << ")[0] = _mm_extract_ps(_mm256_cvtpd_ps(" << v.getName() << "), " << pos << ");" << endl;
         }
 
         return buf.str();
@@ -559,69 +661,110 @@ private:
     const bool skipCond;
 };
 
-void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask)
+void loadSOAFVec(InstVector& ivector
+               , const FVec& ret
+               , const Address *a
+               , int soanum
+               , int soalen
+               , string mask)
 {
     if(soalen == 4) {
         ivector.push_back( new LoadFVec(ret, a, string("")));
-    }
+    } 
+    //FIXME : Add support for soalen == 2
+    /*
     else if(soalen == 2) {
         ivector.push_back( new LoadHalfFVec(ret, a, soanum));
     }
+    */
     else {
         printf("SOALEN = %d not supported\n", soalen);
         exit(1);
     }
 }
 
-void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen)
+void storeSOAFVec(InstVector& ivector
+                , const FVec& ret
+                , const Address *a
+                , int soanum
+                , int soalen)
 {
     if(soalen == 4) {
         ivector.push_back( new StoreFVec(ret, a, 0));
     }
+    //FIXME : Add support for SOAlen == 2
+    /*
     else if(soalen == 2) {
         ivector.push_back( new StoreHalfFVec(ret, a, soanum));
     }
+    */
     else {
         printf("SOALEN = %d not supported\n", soalen);
         exit(1);
     }
 }
 
-void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward, string mask)
+void loadSplitSOAFVec(InstVector& ivector
+                    , const FVec& ret
+                    , const Address *a1
+                    , const Address *a2
+                    , int soanum
+                    , int soalen
+                    , int forward
+                    , string mask)
 {
-    ivector.push_back( new LoadSplitSOAFVec(ret, a1, a2, soanum, soalen, forward));
+    ivector.push_back(new LoadSplitSOAFVec(ret,a1,a2,soanum,soalen,forward));
 }
 
-void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)
-{
-    int pos = 0, nBits = 0;
 
-    for(int i = 0; i < 4; i++) if(possibleMask & (1 << i)) {
-            nBits++;
-        }
-
-    for(int i = 0; i < 4; i++)
-        if(possibleMask & (1 << i)) {
-            ivector.push_back( new CondInsertFVecElement(ret, new AddressImm(a, pos), mask, i, nBits==1));
-            //pos++;
-        }
-}
-
-void packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)
+void unpackFVec(InstVector& ivector
+              , const FVec& ret
+              , Address *a
+              , string mask
+              , int possibleMask)
 {
     int pos = 0, nBits = 0;
 
     for(int i = 0; i < 4; i++) if(possibleMask & (1 << i)) {
             nBits++;
-        }
+    }
 
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < 4; i++) {
         if(possibleMask & (1 << i)) {
-            ivector.push_back( new CondExtractFVecElement(ret, new AddressImm(a, pos), mask, i, nBits==1));
+            ivector.push_back(new CondInsertFVecElement(ret
+                                                      , new AddressImm(a, pos)
+                                                      , mask
+                                                      , i
+                                                      , nBits==1));
             //pos++;
         }
+    }
 }
 
+void packFVec(InstVector& ivector
+            , const FVec& ret
+            , Address *a
+            , string mask
+            , int possibleMask)
+{
+    int pos = 0, nBits = 0;
+
+    for(int i = 0; i < 4; i++) if(possibleMask & (1 << i)) {
+            nBits++;
+    }
+
+    for(int i = 0; i < 4; i++) {
+        if(possibleMask & (1 << i)) {
+            ivector.push_back(new CondExtractFVecElement(ret
+                                                       , new AddressImm(a, pos)
+                                                       , mask
+                                                       , i
+                                                       , nBits==1));
+            //pos++;
+        }
+    }
+}
+/*
 void gatherFVec(InstVector& ivector, const FVec& ret, GatherAddress *a, string mask)
 {
     ivector.push_back( new GatherFVec(ret, a, mask));
@@ -631,7 +774,8 @@ void scatterFVec(InstVector& ivector, const FVec& ret, GatherAddress *a)
 {
     ivector.push_back( new ScatterFVec(ret, a));
 }
-
+*/
+/*
 void gatherPrefetchL1(InstVector& ivector, GatherAddress *a, int type)
 {
     ivector.push_back( new GatherPrefetchL1(a, type));
@@ -641,8 +785,13 @@ void gatherPrefetchL2(InstVector& ivector, GatherAddress *a, int type)
 {
     ivector.push_back( new GatherPrefetchL2(a, type));
 }
-
-void fperm64x2(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, const int imm)
+*/
+/*
+void fperm64x2(InstVector& ivector
+             , const FVec& ret
+             , const FVec& a
+             , const FVec& b
+             , const int imm)
 {
     ivector.push_back(new Perm64x2(ret, a, b, imm));
 }
@@ -653,7 +802,7 @@ void transpose2x2(InstVector& ivector, const FVec r[2], const FVec f[2])
         fperm64x2(ivector, r[i], f[0], f[1], 0x20+i*0x11);
     }
 }
-
+*/
 void transpose1x1(InstVector& ivector, const FVec r[1], const FVec f[1])
 {
     movFVec(ivector, r[0], f[0], string(""));
@@ -663,7 +812,9 @@ void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen)
 {
     switch (soalen) {
     case 2:
-        transpose2x2(ivector, r, f);
+        // FIXME : Add support for SOALEN 2 
+        //transpose2x2(ivector, r, f);
+        printf("SOALEN = %d Not Yet supported (only SOALEN = 4 supported)\n", soalen); 
         break;
 
     case 4:
@@ -671,8 +822,9 @@ void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen)
         break;
 
     default:
-        printf("SOALEN = %d Not Supported (only SOALEN = 2, 4 supported)\n", soalen);
+        printf("SOALEN = %d Not Yet supported (only SOALEN = 4 supported)\n", soalen); 
+        //printf("SOALEN = %d Not Supported (only SOALEN = 2, 4 supported)\n", soalen);
     }
 }
-*/
+
 #endif // PRECISION == 2

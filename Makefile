@@ -8,7 +8,7 @@ CONFFILE=customMake.$(mode)
 include $(CONFFILE)
 
 #CXXHOST  = icpc -O3 -g
-CXXHOST = g++ -O3 -g -march=corei7-avx
+CXXHOST = g++ -O3 -g -march=corei7-avx -Wall
 
 ifeq ($(mode),mic)
 ifeq ($(PRECISION),1)

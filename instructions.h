@@ -233,8 +233,8 @@ public:
         return (1);
     }
 private:
-    const string vname;
     const string pname;
+    const string vname;    
 };
 
 class IfAllOneCond : public Instruction

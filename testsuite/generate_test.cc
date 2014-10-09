@@ -86,7 +86,7 @@ GenerateTestFns::generateFnMadd(bool useMask)
 
     ofs << "{" << endl;
     
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
       ofs <<"    " << ivector[i]->serialize() << endl;
     }
 
@@ -155,7 +155,7 @@ GenerateTestFns::generateFMadd(bool useMask)
 
     ofs << "{" << endl;
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         ofs << ivector[i]->serialize() << endl;
     }
 
@@ -217,7 +217,7 @@ GenerateTestFns::generateSub(bool useMask)
 
     ofs << "{" << endl;
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         ofs << ivector[i]->serialize() << endl;
     }
 
@@ -265,7 +265,7 @@ GenerateTestFns::generateAdd(bool useMask)
     if(!useMask)
       ofs << "void testAddGenerated( ";
     else
-      ofs << "void testMaskedAddGenpermute2f128erated( ";    
+      ofs << "void testMaskedAddGenerated( ";    
 
     ofs << FVecBaseType <<" *ret, "
         << "const " << FVecBaseType <<" *a, "
@@ -278,7 +278,7 @@ GenerateTestFns::generateAdd(bool useMask)
 
     ofs << "{" << endl;
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         ofs << ivector[i]->serialize() << endl;
     }
 
@@ -338,7 +338,7 @@ GenerateTestFns::generateMul(bool useMask)
       
     ofs << "{" << endl;
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         ofs << ivector[i]->serialize() << endl;
     }
 
@@ -369,7 +369,7 @@ GenerateTestFns::generateSetZero()
 
     out << "{" << endl;
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         out << ivector[i]->serialize() << endl;
     }
 
@@ -423,7 +423,7 @@ GenerateTestFns::generateLoadStoreFVec(bool useMask)
       
     ofs << "{" << endl;
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         ofs << ivector[i]->serialize() << endl;
     }
 

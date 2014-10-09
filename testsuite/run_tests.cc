@@ -21,6 +21,7 @@ using namespace std;
 #endif
 
 /* Generated functions that use the compiler intrinsics. */
+#include "test_fns/gen_ld_st.h"
 #include "test_fns/gen_setzero.h"
 #include "test_fns/gen_add.h"
 #include "test_fns/gen_sub.h"
@@ -32,7 +33,56 @@ using namespace std;
 int 
 RunTests::testLoadStore(bool withMask=false)
 {
-// TODO
+    FVecBaseType ld[VECLEN];
+    FVecBaseType st[VECLEN];
+    
+    for(int i=0; i < VECLEN; i++) {
+        ld[i] = (FVecBaseType)(i+1);
+    }   
+     
+    /* Call generated function */
+    if(withMask) {
+        cout << setw(8) << left << "Load/Store" << setw(10) << "(masked)" << ": " ;    
+
+        for(unsigned int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
+            testMaskedLoadStoreFVec(st, ld, msk);
+            
+            /* Do it manually */
+            FVecBaseType chk[VECLEN];
+            for (unsigned int i = 0; i < VECLEN; ++i) {
+                chk[i] = (msk & 1 << i ) > 0 ? ld[i] : 0;    
+            }
+            
+            /* Check if the results match */
+            for(int i = 0; i < VECLEN; i++) { 
+                double diff = st[i] - chk[i];
+                double rel_diff = diff/ld[2];
+                if( fabs(rel_diff) > tol ) { 
+                    std::cout << "FAIL: For mask value : " << msk << " i = " << i 
+                              << " desired = " << ld[i] 
+                              << " generated=" << chk[i] << endl;
+                    return 0;
+                }
+            }
+        }    
+    }
+    else {
+        cout << setw(8) << left << "Load/Store" << setw(10) <<"(no mask)" << ": " ;    
+        testLoadStoreFVec(st, ld);
+        /* Check if the results match */
+        for(int i = 0; i < VECLEN; i++) { 
+            double diff = ld[i]-st[i];
+            double rel_diff = diff/ld[2];
+            if( fabs(rel_diff) > tol ) { 
+                std::cout << "FAIL: i= " << i 
+                          << " desired = " << ld[i] 
+                          << " generated=" << st[i] << endl;
+                return 0;
+            }
+        }
+    }  
+    std::cout << "PASS" << left << endl;
+    return 1;    
 }
 
 /** Test the add function */
@@ -83,7 +133,7 @@ RunTests::testAdd(bool withMask=false)
     if(withMask) {
         cout << setw(8) << left << "Add" << setw(10) << "(masked)" << ": " ;    
 
-        for(int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
+        for(unsigned int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
             testMaskedAddGenerated(ret, a, b, msk);
             for(int i = 0; i < VECLEN; ++i) { 
                 ret2[i] = (msk & 1 << i ) > 0 ? a[i] + b[i] : 0;
@@ -373,6 +423,8 @@ RunTests::testFMadd(bool withMask=false)
 int main(int argc, char *argv[]) 
 {
     RunTests runTest;
+    runTest.testLoadStore(false);
+    runTest.testLoadStore(true);    
     runTest.testSetZero();
     runTest.testAdd(false);
     runTest.testAdd(true);
