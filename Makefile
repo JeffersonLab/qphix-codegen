@@ -197,8 +197,9 @@ cleanall:
 	rm -rf ./mic
 	rm -rf ./sse
 	rm -rf ./scalar
-	rm testsuite/generate_test
-	rm testsuite/run_tests
+	rm -rf ./qpx
+	rm testsuite/generate_test.exe
+	rm testsuite/run_tests.exe
 
 generate_test: testsuite/generate_test.cc libcodegen.a
 	$(CXXHOST) $(DEFS) -I. testsuite/generate_test.cc -o testsuite/$@.exe -L. -lcodegen

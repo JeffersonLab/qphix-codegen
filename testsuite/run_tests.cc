@@ -5,11 +5,11 @@ using namespace std;
 
 #include "run_tests.h"
 
-#if ARCH  == avx || ARCH == avx2
+#ifdef QPX
+#include "qpx_utils.h"
+#else
 #include <immintrin.h>
 #include "avx_utils.h"
-#elif ARCH == qpx
-#include "qpx_utils.h"
 #endif
 
 #if PRECISION == 1

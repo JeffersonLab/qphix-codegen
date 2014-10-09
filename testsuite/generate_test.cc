@@ -26,6 +26,60 @@ GenerateTestFns::GenerateTestFns()
 }
 
 /**
+ * Load packed floating point elements from memory to VPU. Then store the loaded
+ * vector elements to a different memory location. We are trying to test if the
+ * load and store works as expected. 
+ * The interesting test is to ensure the blended load is working as expected.
+ */ 
+void 
+GenerateTestFns::generateLoadStoreFVec(bool useMask)
+{
+    string _tmp(outPath); 
+    ofstream ofs;
+    ofs.open(_tmp.append("/gen_ld_st.h").c_str(), ofstream::out | ofstream::app);    
+
+    InstVector ivector;  
+    FVec ldvec("ldvec");
+    GenericAddress addr_ld("ld",0);
+    GenericAddress addr_st("st",0);
+
+    declareFVecFromFVec(ivector,ldvec);
+
+    if(!useMask)
+      loadFVec(ivector, ldvec, &addr_ld, "");
+    else {
+      string mask = "maskVal";
+      declareMask(ivector, mask);
+      intToMask(ivector, mask, "msk");
+      loadFVec(ivector, ldvec, &addr_ld, mask);
+    } 
+       
+    storeFVec(ivector, ldvec, &addr_st, 0);    
+    
+    if(!useMask)
+      ofs << "void testLoadStoreFVec( ";
+    else
+      ofs << "void testMaskedLoadStoreFVec( ";    
+      
+    ofs << FVecBaseType <<" *st, "
+        << FVecBaseType <<" *ld";
+
+    if(!useMask)       
+      ofs << " )" << endl;
+    else
+      ofs << ", unsigned int msk )" << endl;
+      
+    ofs << "{" << endl;
+
+    for(unsigned int i=0; i < ivector.size(); i++) {
+        ofs << ivector[i]->serialize() << endl;
+    }
+
+    ofs << "}" << endl;
+    ofs.close();    
+}
+
+/**
  * Multiplication of packed double-precision (64-bit) floating-point 
  * elements in a and b and add the negated intermediate result to packed 
  * elements in c, and store the results in dst. 
@@ -75,9 +129,9 @@ GenerateTestFns::generateFnMadd(bool useMask)
       ofs << "void testMaskedFnMaddGenerated( ";
     
     ofs << FVecBaseType <<" *ret, "
-        << "const " << FVecBaseType <<" *a, "
-        << "const " << FVecBaseType <<" *b, " 
-        << "const " << FVecBaseType <<" *c";
+        << FVecBaseType <<" *a, "
+        << FVecBaseType <<" *b, " 
+        << FVecBaseType <<" *c";
 
     if(!useMask)       
       ofs << " )" << endl;
@@ -143,9 +197,9 @@ GenerateTestFns::generateFMadd(bool useMask)
       ofs << "void testMaskedFMaddGenerated( ";
     
     ofs << FVecBaseType <<" *ret, "
-        << "const " << FVecBaseType <<" *a, "
-        << "const " << FVecBaseType <<" *b, " 
-        << "const " << FVecBaseType <<" *c";
+        << FVecBaseType <<" *a, "
+        << FVecBaseType <<" *b, " 
+        << FVecBaseType <<" *c";
 
     if(!useMask)       
       ofs << " )" << endl;
@@ -207,8 +261,8 @@ GenerateTestFns::generateSub(bool useMask)
       ofs << "void testMaskedSubGenerated( ";
 
     ofs << FVecBaseType <<" *ret, "
-        << "const " << FVecBaseType <<" *a, "
-        << "const " << FVecBaseType <<" *b";
+        << FVecBaseType <<" *a, "
+        << FVecBaseType <<" *b";
 
     if(!useMask)       
       ofs << " )" << endl;
@@ -268,8 +322,8 @@ GenerateTestFns::generateAdd(bool useMask)
       ofs << "void testMaskedAddGenerated( ";    
 
     ofs << FVecBaseType <<" *ret, "
-        << "const " << FVecBaseType <<" *a, "
-        << "const " << FVecBaseType <<" *b";
+        << FVecBaseType <<" *a, "
+        << FVecBaseType <<" *b";
 
     if(!useMask)       
       ofs << " )" << endl;
@@ -328,8 +382,8 @@ GenerateTestFns::generateMul(bool useMask)
       ofs << "void testMaskedMulGenerated( ";    
       
     ofs << FVecBaseType <<" *ret, "
-        << "const " << FVecBaseType <<" *a, "
-        << "const " << FVecBaseType <<" *b";
+        << FVecBaseType <<" *a, "
+        << FVecBaseType <<" *b";
 
     if(!useMask)       
       ofs << " )" << endl;
@@ -374,61 +428,6 @@ GenerateTestFns::generateSetZero()
     }
 
     out << "}" << endl;
-}
-
-
-/**
- * Load packed floating point elements from memory to VPU. Then store the loaded
- * vector elements to a different memory location. We are trying to test if the
- * load and store works as expected. 
- * The interesting test is to ensure the blended load is working as expected.
- */ 
-void 
-GenerateTestFns::generateLoadStoreFVec(bool useMask)
-{
-    string _tmp(outPath); 
-    ofstream ofs;
-    ofs.open(_tmp.append("/gen_ld_st.h").c_str(), ofstream::out | ofstream::app);    
-
-    InstVector ivector;  
-    FVec ldvec("ldvec");
-    GenericAddress addr_ld("ld",0);
-    GenericAddress addr_st("st",0);
-
-    declareFVecFromFVec(ivector,ldvec);
-
-    if(!useMask)
-      loadFVec(ivector, ldvec, &addr_ld, "");
-    else {
-      string mask = "maskVal";
-      declareMask(ivector, mask);
-      intToMask(ivector, mask, "msk");
-      loadFVec(ivector, ldvec, &addr_ld, mask);
-    } 
-       
-    storeFVec(ivector, ldvec, &addr_st, 0);    
-    
-    if(!useMask)
-      ofs << "void testLoadStoreFVec( ";
-    else
-      ofs << "void testMaskedLoadStoreFVec( ";    
-      
-    ofs << FVecBaseType <<" *st, "
-        << "const " << FVecBaseType <<" *ld";
-
-    if(!useMask)       
-      ofs << " )" << endl;
-    else
-      ofs << ", unsigned int msk )" << endl;
-      
-    ofs << "{" << endl;
-
-    for(unsigned int i=0; i < ivector.size(); i++) {
-        ofs << ivector[i]->serialize() << endl;
-    }
-
-    ofs << "}" << endl;
-    ofs.close();    
 }
 
 /************************** Private helper functions **************************/

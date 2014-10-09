@@ -1,11 +1,11 @@
-#ifndef QPHIX_QPX_UTILS_H
-#define QPHIX_QPX_UTILS_H
+#ifndef __QPHIX_QPX_UTILS_H__
+#define __QPHIX_QPX_UTILS_H__
 
-#if (ARCH == qpx) 
+#ifdef QPX
 
-inline __vector4double _v4d_int2mask(unsigned int msk) {
+inline vector4double _v4d_int2mask(unsigned int msk) {
 
-    __vector4double ret = vec_gpci(00123);
+    vector4double ret = vec_gpci(00123);
     msk = msk & 0x0F;
     
     switch (msk) {
@@ -29,4 +29,5 @@ inline __vector4double _v4d_int2mask(unsigned int msk) {
 	return ret;
 }
 
+#endif
 #endif

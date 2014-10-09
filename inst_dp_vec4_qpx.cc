@@ -5,7 +5,7 @@
 #if PRECISION == 2 && VECLEN == 4
 #pragma message "Using BGQ double Precision"
 
-#define FVECTYPE "__vector4double"
+#define FVECTYPE "vector4double"
 using namespace std;
 
 
@@ -32,10 +32,10 @@ string DeclareMask::serialize() const
     ostringstream outbuf;
 
     if(value.empty()) {
-        outbuf << "__vector4double " << name << ";" << endl;
+        outbuf << "vector4double " << name << ";" << endl;
     }
     else {
-        outbuf << "__vector4double " << name << " = " << value << ";" << endl;
+        outbuf << "vector4double " << name << " = " << value << ";" << endl;
     }
 
     return outbuf.str();
@@ -68,7 +68,7 @@ string LoadFVec::serialize() const
 
     if(mask.empty()) {
         if(!a->isHalfType()) {
-            buf << v.getName() << " = vec_lda(0," << a->serialize() << ");" <<endl;
+            buf << v.getName() << " = vec_ld(0, " << a->serialize() << ");" <<endl;
         }
         else {
             //FIXME
@@ -85,7 +85,7 @@ string LoadFVec::serialize() const
             /* Define a zero vector. */
             buf << v.getType() << " zeroVec = vec_splats(0.0);" << endl; 
             /* Load the vector from memory. */
-            buf << v.getName() << " = vec_lda(0, " << a->serialize() << ");" << endl;
+            buf << v.getName() << " = vec_ld(0, " << a->serialize() << ");" << endl;
             /* Blend with the zero vector. Retain the elements that have the 
              * corresponding high bit set in the mask. 
              */
@@ -108,7 +108,7 @@ string LoadFVec::serialize() const
 string StoreFVec::serialize() const
 {
     ostringstream buf;
-    int streaming = isStreaming;
+    //int streaming = isStreaming;
     //TODO : Does QPX have an equivalent of AVX _mm256_stream_pd?
     if(!a->isHalfType()) {
       buf << "vec_sta("  << v.getName() << ", 0, " << a->serialize() << ");" << endl;
@@ -483,8 +483,8 @@ public:
                     , const int soanum_
                     , const int soalen_
                     , int forward_) 
-                    : v(v_), a1(a1_), a2(a2_), soanum(soanum_)
-                    , soalen(soalen_), forward(forward_) {}
+                    : v(v_), a1(a1_), a2(a2_) , soalen(soalen_)
+                   , soanum(soanum_), forward(forward_) {}
                     
     string serialize() const
     {
