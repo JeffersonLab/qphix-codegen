@@ -8,7 +8,11 @@ private:
  * defining values for the double precision case (0-15), if required this 
  * can be expanded for the single precision testcases (0-255).
  */
+#if PRECISION == 1
     static const int NUM_MASKS = 16;
+#else
+    static const int NUM_MASKS = 256;
+#endif
     //static const int MASKS[NUM_MASKS];
     /*static int const _M00 = 0;
     static int const _M01 = 1;
