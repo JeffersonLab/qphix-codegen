@@ -59,7 +59,7 @@ RunTests::testLoadStore(bool withMask=false)
                 double rel_diff = diff/ld[2];
                 if( fabs(rel_diff) > tol ) { 
                     std::cout << "FAIL: For mask value : " << msk << " i = " << i 
-                              << " desired = " << ld[i] 
+                              << " desired = " << st[i] 
                               << " generated=" << chk[i] << endl;
                     return 0;
                 }

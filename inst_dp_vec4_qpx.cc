@@ -89,7 +89,8 @@ string LoadFVec::serialize() const
             /* Blend with the zero vector. Retain the elements that have the 
              * corresponding high bit set in the mask. 
              */
-            buf << v.getName() << " = vec_perm( zeroVec, " << v.getName() << "," << mask << ");" << endl;
+            buf << v.getName() << " = vec_perm( zeroVec, " << v.getName() 
+                << "," << mask << ");" << endl;
         }
         else {
             //FIXME
