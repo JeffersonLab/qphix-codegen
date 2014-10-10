@@ -32,10 +32,10 @@ string DeclareMask::serialize() const
     ostringstream outbuf;
 
     if(value.empty()) {
-        outbuf << "vector4double " << name << ";" << endl;
+        outbuf << FVECTYPE << " " << name << ";" << endl;
     }
     else {
-        outbuf << "vector4double " << name << " = " << value << ";" << endl;
+        outbuf << FVECTYPE << " " << name << " = " << value << ";" << endl;
     }
 
     return outbuf.str();
@@ -95,9 +95,9 @@ string LoadFVec::serialize() const
         else {
             //FIXME
             buf << "#error \"halftype is not supported (yet) in the QPX backend\"" 
-	        << endl;
-	    printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
-	    exit(1);
+                << endl;
+            printf("FIXME: halftype is not supported (yet) in the QPX backend\n");
+            exit(1);
             //buf << v.getName() << " = _mm256_cvtps_pd(_mm_maskload_ps(" << a->serialize() << ", _mm_castps_si128(_mm256_cvtpd_ps(" << mask << "))));" <<endl;
         }
     }
@@ -152,7 +152,7 @@ string GatherFVec::serialize() const
     return buf.str();
 
 }
-*/
+
 string ScatterFVec::serialize() const
 {
     std::ostringstream buf;
@@ -162,7 +162,7 @@ string ScatterFVec::serialize() const
     exit(1);
     return buf.str();
 }
-
+*/
 string LoadBroadcast::serialize() const
 {
     std::ostringstream buf;
@@ -237,7 +237,7 @@ PrefetchL2::PrefetchL2( const Address* a_, int type) : a(a_)
         break;
     }
 }
-
+/*
 GatherPrefetchL1::GatherPrefetchL1( const GatherAddress* a_, int type) : a(a_)
 {
     // Type: 0 - none, 1 - NT, 2 - Ex, 3 - NT+Ex
@@ -249,8 +249,8 @@ GatherPrefetchL1::GatherPrefetchL1( const GatherAddress* a_, int type) : a(a_)
     case 1:
         hint = "_MM_HINT_NTA";
         break;
-//		case 2: hint = "_MM_HINT_ET0"; break;
-//		case 3: hint = "_MM_HINT_ENTA"; break;
+//        case 2: hint = "_MM_HINT_ET0"; break;
+//        case 3: hint = "_MM_HINT_ENTA"; break;
     }
 }
 string GatherPrefetchL1::serialize() const
@@ -261,7 +261,7 @@ string GatherPrefetchL1::serialize() const
     exit(1);
     return buf.str();
 }
-/*
+
 GatherPrefetchL2::GatherPrefetchL2( const GatherAddress* a_, int type) : a(a_)
 {
     // Type: 0 - none, 1 - NT, 2 - Ex, 3 - NT+Ex
@@ -273,8 +273,8 @@ GatherPrefetchL2::GatherPrefetchL2( const GatherAddress* a_, int type) : a(a_)
     case 1:
         hint = "_MM_HINT_T2";
         break;
-//		case 2: hint = "_MM_HINT_ET1"; break;
-//		case 3: hint = "_MM_HINT_ET2"; break;
+//        case 2: hint = "_MM_HINT_ET1"; break;
+//        case 3: hint = "_MM_HINT_ET2"; break;
     }
 }
 string GatherPrefetchL2::serialize() const
