@@ -433,7 +433,7 @@ private:
 class LoadSplitSOAFVec : public MemRefInstruction
 {
 public:
-    LoadSplitSOAFVec( const FVec& v_, const Address* a1_, const Address* a2_, const int soanum_, const int soalen_, int forward_) : v(v_), a1(a1_), a2(a2_), soanum(soanum_), soalen(soalen_), forward(forward_) {}
+    LoadSplitSOAFVec( const FVec& v_, const Address* a1_, const Address* a2_, const int soanum_, const int soalen_, int forward_) : v(v_), a1(a1_), a2(a2_), soalen(soalen_), soanum(soanum_), forward(forward_) {}
     string serialize() const
     {
         std::ostringstream buf;

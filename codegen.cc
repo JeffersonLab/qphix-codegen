@@ -67,7 +67,7 @@ void mergeIvectorWithL2Prefetches(InstVector& ivector, InstVector& l2prefs)
 
     std::map<string,string> offslist;
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         Instruction *inst = ivector[i];
 
         if ( inst->hasAddress() ) {
@@ -97,7 +97,7 @@ void dumpIVector(InstVector& ivector, string filename)
 {
     ofstream outfile(filename.c_str());
 
-    for(int i=0; i < ivector.size(); i++) {
+    for(unsigned int i=0; i < ivector.size(); i++) {
         outfile << ivector[i]->serialize() << endl;
     }
 

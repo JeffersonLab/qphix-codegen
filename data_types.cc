@@ -450,14 +450,14 @@ void prefetchL2CloverBlockIn(InstVector& ivector, string base, string off, int b
 void PrefetchL1FullSpinorDirIn(InstVector& ivector, const string& base, const string& off, int dir, int type)
 {
     // for now we ignore direction but it can be used for specialization
-    for(int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
+    for(unsigned int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
         prefetchL1SpinorIn(ivector, base, off, i*(64/sizeof(SpinorBaseType)), dir, type);
     }
 }
 
 void PrefetchL1FullSpinorOut(InstVector& ivector, const string& base, const string& off)
 {
-    for(int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
+    for(unsigned int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
         prefetchL1SpinorOut(ivector, base, off, i*(64/sizeof(SpinorBaseType)));
     }
 }
@@ -465,14 +465,14 @@ void PrefetchL1FullSpinorOut(InstVector& ivector, const string& base, const stri
 void PrefetchL2FullSpinorDirIn(InstVector& ivector, const string& base, const string& off, const string& pref_dist, int dir)
 {
     // for now we ignore direction but itcan be used for specialization
-    for(int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
+    for(unsigned int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
         prefetchL2SpinorIn(ivector, base, off, pref_dist, i*(64/sizeof(SpinorBaseType)), dir);
     }
 }
 
 void PrefetchL2FullSpinorOut(InstVector& ivector, const string& base, const string& off, const string& pref_dist)
 {
-    for(int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
+    for(unsigned int i = 0; i < (24*SOALEN*sizeof(SpinorBaseType)+63)/64; i++) {
         prefetchL2SpinorOut(ivector, base, off, pref_dist, i*(64/sizeof(SpinorBaseType)));
     }
 }
@@ -493,7 +493,7 @@ void PrefetchL1FullGaugeDirIn(InstVector& ivector, const string& base, const str
         g_size=3*3*2;
     }
 
-    for(int i = 0; i < ((g_size*nSites*sizeof(GaugeBaseType)+63)/64); i++) {
+    for(unsigned int i = 0; i < ((g_size*nSites*sizeof(GaugeBaseType)+63)/64); i++) {
         prefetchL1GuageDirIn(ivector, base, off, dir, i*(64/sizeof(GaugeBaseType)));
     }
 }
@@ -514,7 +514,7 @@ void PrefetchL2FullGaugeDirIn(InstVector& ivector, const string& base, const str
         g_size=3*3*2;
     }
 
-    for(int i = 0; i < ((g_size*nSites*sizeof(GaugeBaseType)+63)/64); i++) {
+    for(unsigned int i = 0; i < ((g_size*nSites*sizeof(GaugeBaseType)+63)/64); i++) {
         prefetchL2GuageDirIn(ivector, base, off, dir, pref_dist, i*(64/sizeof(GaugeBaseType)));
     }
 }
@@ -534,7 +534,7 @@ void PrefetchL1FullCloverBlockIn(InstVector& ivector, const string& base, const 
     int nSites = VECLEN;
 #endif
 
-    for(int i = 0; i < ((36*nSites*sizeof(CloverBaseType)+63)/64); i++) {
+    for(unsigned int i = 0; i < ((36*nSites*sizeof(CloverBaseType)+63)/64); i++) {
         prefetchL1CloverBlockIn(ivector, base, off, block, i*(64/sizeof(CloverBaseType)));
     }
 }
@@ -547,7 +547,7 @@ void PrefetchL2FullCloverIn(InstVector& ivector, const string& base, const strin
     int nSites = VECLEN;
 #endif
 
-    for(int i = 0; i < ((2*36*nSites*sizeof(CloverBaseType)+63)/64); i++) {
+    for(unsigned int i = 0; i < ((2*36*nSites*sizeof(CloverBaseType)+63)/64); i++) {
         prefetchL2CloverBlockIn(ivector, base, off, 0, pref_dist, i*(64/sizeof(CloverBaseType)));
     }
 }
@@ -555,8 +555,7 @@ void PrefetchL2FullCloverIn(InstVector& ivector, const string& base, const strin
 void PrefetchL1HalfSpinorDir(InstVector& ivector, const string& base, int dir, bool isPrefforWrite, int type)
 {
     int nActiveLanes = VECLEN;
-    int ind = 0;
-
+    
     if(dir == 0 || dir == 1) {
         nActiveLanes = (VECLEN/SOALEN+1)/2;    // +1 to avoid making it 0 when SOALEN=VECLEN
     }
@@ -573,7 +572,7 @@ void PrefetchL1HalfSpinorDir(InstVector& ivector, const string& base, int dir, b
 
 #endif
 
-    for(int i = 0; i < (12*nActiveLanes*sizeof(SpinorBaseType)+63)/64; i++) {
+    for(unsigned int i = 0; i < (12*nActiveLanes*sizeof(SpinorBaseType)+63)/64; i++) {
         prefetchL1(ivector, new AddressImm(new GenericAddress(base, SpinorType), i*(64/sizeof(SpinorBaseType))), type);
     }
 }
@@ -581,7 +580,6 @@ void PrefetchL1HalfSpinorDir(InstVector& ivector, const string& base, int dir, b
 void PrefetchL2HalfSpinorDir(InstVector& ivector, const string& base, const string& pref_dist, int dir, bool isPrefforWrite, int type)
 {
     int nActiveLanes = VECLEN;
-    int ind = 0;
 
     if(dir == 0 || dir == 1) {
         nActiveLanes = (VECLEN/SOALEN+1)/2;    // +1 to avoid making it 0 when SOALEN=VECLEN
@@ -599,7 +597,7 @@ void PrefetchL2HalfSpinorDir(InstVector& ivector, const string& base, const stri
 
 #endif
 
-    for(int i = 0; i < (12*nActiveLanes*sizeof(SpinorBaseType)+63)/64; i++) {
+    for(unsigned int i = 0; i < (12*nActiveLanes*sizeof(SpinorBaseType)+63)/64; i++) {
         prefetchL2(ivector, new AddressImm(new AddressOffset(new GenericAddress(base, SpinorType), pref_dist), i*(64/sizeof(SpinorBaseType))), type);
     }
 }
