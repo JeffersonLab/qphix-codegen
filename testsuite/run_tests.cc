@@ -28,6 +28,7 @@ using namespace std;
 #include "test_fns/gen_mul.h"
 #include "test_fns/gen_fnMadd.h"
 #include "test_fns/gen_fMadd.h"
+#include "test_fns/gen_loadSplitSOAFVec.h"
 
 /** Testing the load-store */
 int 
@@ -42,7 +43,7 @@ RunTests::testLoadStore(bool withMask=false)
      
     /* Call generated function */
     if(withMask) {
-        cout << setw(8) << left << "Load/Store" << setw(10) << "(masked)" << ": " ;    
+        cout << setw(10) << left << "Load/Store" << setw(10) << "(masked)" << ": " ;    
 
         for(unsigned int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
             testMaskedLoadStoreFVec(st, ld, msk);
@@ -50,14 +51,14 @@ RunTests::testLoadStore(bool withMask=false)
             /* Do it manually */
             FVecBaseType chk[VECLEN];
             for (unsigned int i = 0; i < VECLEN; ++i) {
-                chk[i] = (msk & 1 << i ) > 0 ? ld[i] : 0;    
+                chk[i] = (msk & 1 << i) > 0 ? ld[i] : 0;    
             }
             
             /* Check if the results match */
             for(int i = 0; i < VECLEN; i++) { 
                 double diff = st[i] - chk[i];
                 double rel_diff = diff/ld[2];
-                if( fabs(rel_diff) > tol ) { 
+                if( fabs(rel_diff) > tol) { 
                     std::cout << "FAIL: For mask value : " << msk << " i = " << i 
                               << " desired = " << st[i] 
                               << " generated=" << chk[i] << endl;
@@ -67,13 +68,13 @@ RunTests::testLoadStore(bool withMask=false)
         }    
     }
     else {
-        cout << setw(8) << left << "Load/Store" << setw(10) <<"(no mask)" << ": " ;    
+        cout << setw(10) << left << "Load/Store" << setw(10) <<"(no mask)" << ": " ;    
         testLoadStoreFVec(st, ld);
         /* Check if the results match */
         for(int i = 0; i < VECLEN; i++) { 
             double diff = ld[i]-st[i];
             double rel_diff = diff/ld[2];
-            if( fabs(rel_diff) > tol ) { 
+            if( fabs(rel_diff) > tol) { 
                 std::cout << "FAIL: i= " << i 
                           << " desired = " << ld[i] 
                           << " generated=" << st[i] << endl;
@@ -92,7 +93,7 @@ RunTests::testSetZero()
     FVecBaseType ret[VECLEN];
     FVecBaseType ret2[VECLEN];
     
-    cout << setw(18) << left << "SetZero" << ": " ;
+    cout << setw(20) << left << "SetZero" << ": " ;
     /* Call generated function */
     testSetZeroGenerated(ret);
 
@@ -104,7 +105,7 @@ RunTests::testSetZero()
     for(int i=0; i < VECLEN; i++) { 
         double diff = ret2[i]-ret[i];
         double rel_diff = diff/ret[2];
-        if( fabs(rel_diff) > tol ) { 
+        if( fabs(rel_diff) > tol) { 
             std::cout << "FAIL: i= " << i << " desired = " 
                   << ret2[i] << " generated=" << ret[i] << endl;
             return 0;
@@ -131,19 +132,19 @@ RunTests::testAdd(bool withMask=false)
     
     /* Call generated function */
     if(withMask) {
-        cout << setw(8) << left << "Add" << setw(10) << "(masked)" << ": " ;    
+        cout << setw(10) << left << "Add" << setw(10) << "(masked)" << ": " ;    
 
         for(unsigned int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
             testMaskedAddGenerated(ret, a, b, msk);
             for(int i = 0; i < VECLEN; ++i) { 
-                ret2[i] = (msk & 1 << i ) > 0 ? a[i] + b[i] : 0;
+                ret2[i] = (msk & 1 << i) > 0 ? a[i] + b[i] : 0;
             }
           
             /* Check if the results match */
             for(int i = 0; i < VECLEN; i++) { 
                 double diff = ret2[i]-ret[i];
                 double rel_diff = diff/ret[2];
-                if( fabs(rel_diff) > tol ) { 
+                if( fabs(rel_diff) > tol) { 
                     std::cout << "FAIL: For mask value : " << msk << " i= " << i 
                               << " desired = " << ret2[i] 
                               << " generated=" << ret[i] << endl;
@@ -153,7 +154,7 @@ RunTests::testAdd(bool withMask=false)
         }    
     }
     else {
-        cout << setw(8) << left << "Add" << setw(10) <<"(no mask)" << ": " ;    
+        cout << setw(10) << left << "Add" << setw(10) <<"(no mask)" << ": " ;    
         testAddGenerated(ret,a,b);
         /* Do it manually */
         for(int i = 0; i < VECLEN; i++) { 
@@ -163,7 +164,7 @@ RunTests::testAdd(bool withMask=false)
         for(int i = 0; i < VECLEN; i++) { 
             double diff = ret2[i]-ret[i];
             double rel_diff = diff/ret[2];
-            if( fabs(rel_diff) > tol ) { 
+            if( fabs(rel_diff) > tol) { 
                 std::cout << "FAIL: i= " << i << " desired = " << ret2[i] 
                           << " generated=" << ret[i] << endl;
                 return 0;
@@ -190,18 +191,18 @@ RunTests::testSub(bool withMask=false)
 
     /* Call generated function */
     if(withMask) {
-        cout << setw(8) << left << "Sub" << setw(10) << "(masked)" << ": " ;    
+        cout << setw(10) << left << "Sub" << setw(10) << "(masked)" << ": " ;    
         for(int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
             testMaskedSubGenerated(ret, a, b, msk);
             for(int i = 0; i < VECLEN; ++i) { 
-                ret2[i] = (msk & 1 << i ) > 0 ? a[i] - b[i] : 0;
+                ret2[i] = (msk & 1 << i) > 0 ? a[i] - b[i] : 0;
             }
           
             /* Check if the results match */
             for(int i = 0; i < VECLEN; i++) { 
                 double diff = ret2[i]-ret[i];
                 double rel_diff = diff/ret[2];
-                if( fabs(rel_diff) > tol ) { 
+                if( fabs(rel_diff) > tol) { 
                     std::cout << "FAIL: For mask value : " << msk << " i= " << i 
                               << " desired = " << ret2[i] 
                               << " generated=" << ret[i] << endl;
@@ -211,7 +212,7 @@ RunTests::testSub(bool withMask=false)
         }
     }
     else {
-      cout << setw(8) << left << "Sub" << setw(10) <<"(no mask)" << ": " ;    
+      cout << setw(10) << left << "Sub" << setw(10) <<"(no mask)" << ": " ;    
       testSubGenerated(ret,a,b);
       /* Do it manually */
       for(int i = 0; i < VECLEN; i++) { 
@@ -220,7 +221,7 @@ RunTests::testSub(bool withMask=false)
       for(int i = 0; i < VECLEN; i++) { 
           double diff = ret2[i]-ret[i];
           double rel_diff = diff/ret[2];
-          if( fabs(rel_diff) > tol ) { 
+          if( fabs(rel_diff) > tol) { 
               std::cout << "FAIL: i= " << i << " desired = " 
                         << ret2[i] << " generated=" << ret[i] << endl;
               return 0;
@@ -248,18 +249,18 @@ RunTests::testMul(bool withMask=false)
  
     /* Call generated function */
     if(withMask) {
-        cout << setw(8) << left << "Mul" << setw(10) << "(masked)" << ": " ;    
+        cout << setw(10) << left << "Mul" << setw(10) << "(masked)" << ": " ;    
         for(int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
             testMaskedMulGenerated(ret, a, b, msk);
             for(int i = 0; i < VECLEN; ++i) { 
-                ret2[i] = (msk & 1 << i ) > 0 ? a[i] * b[i] : 0;
+                ret2[i] = (msk & 1 << i) > 0 ? a[i] * b[i] : 0;
             }
           
             /* Check if the results match */
             for(int i = 0; i < VECLEN; i++) { 
                 double diff = ret2[i]-ret[i];
                 double rel_diff = diff/ret[2];
-                if( fabs(rel_diff) > tol ) { 
+                if( fabs(rel_diff) > tol) { 
                     std::cout << "FAIL: For mask value : " << msk << " i= " << i 
                               << " desired = " << ret2[i] 
                               << " generated=" << ret[i] << endl;
@@ -269,7 +270,7 @@ RunTests::testMul(bool withMask=false)
         }
     }
     else {
-        cout << setw(8) << left << "Mul" << setw(10) <<"(no mask)" << ": " ;    
+        cout << setw(10) << left << "Mul" << setw(10) <<"(no mask)" << ": " ;    
         testMulGenerated(ret,a,b);
         /* Do it manually */
         for(int i=0; i < VECLEN; i++) { 
@@ -279,7 +280,7 @@ RunTests::testMul(bool withMask=false)
         for(int i=0; i < VECLEN; i++) { 
             double diff = ret2[i]-ret[i];
             double rel_diff = diff/ret[2];
-            if( fabs(rel_diff) > tol ) { 
+            if( fabs(rel_diff) > tol) { 
                 std::cout << "FAIL: i= " << i << " desired = " 
                   << ret2[i] << " generated=" << ret[i] << endl;
                 return 0;
@@ -310,19 +311,19 @@ RunTests::testFnMadd(bool withMask=false)
     
     /* Call generated function */
     if(withMask) {
-        cout << setw(8) << left << "FnMAdd" << setw(10) << "(masked)" << ": " ;
+        cout << setw(10) << left << "FnMAdd" << setw(10) << "(masked)" << ": " ;
         for(int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
             testMaskedFnMaddGenerated(ret,a,b,c, msk);
             /* Do it manually */
             for(int i=0; i < VECLEN; ++i) { 
-                ret2[i] = (msk & 1 << i ) > 0 ? c[i] - (a[i]*b[i]) : 0;
+                ret2[i] = (msk & 1 << i) > 0 ? c[i] - (a[i]*b[i]) : 0;
             }
             
             /* Check if the results match */
             for(int i = 0; i < VECLEN; i++) { 
                 double diff = ret2[i]-ret[i];
                 double rel_diff = diff/ret[2];
-                if( fabs(rel_diff) > tol ) { 
+                if( fabs(rel_diff) > tol) { 
                     std::cout << "FAIL: For mask value : " << msk << " i= " << i 
                               << " desired = " << ret2[i] 
                               << " generated=" << ret[i] << endl;
@@ -332,7 +333,7 @@ RunTests::testFnMadd(bool withMask=false)
         }    
     }
     else {
-        cout << setw(8) << left << "FnMAdd" << setw(10) << "(no mask)" << ": " ;    
+        cout << setw(10) << left << "FnMAdd" << setw(10) << "(no mask)" << ": " ;    
         testFnMaddGenerated(ret,a,b,c);
         /* Do it manually */
         for(int i=0; i < VECLEN; i++) { 
@@ -342,7 +343,7 @@ RunTests::testFnMadd(bool withMask=false)
         for(int i=0; i < VECLEN; i++) { 
             double diff = ret2[i]-ret[i];
             double rel_diff = diff/ret[2];
-            if( fabs(rel_diff) > tol ) { 
+            if( fabs(rel_diff) > tol) { 
             std::cout << "FAIL: i= " << i << " desired = " 
                       << ret2[i] << " generated=" << ret[i] << endl;
             return 0;
@@ -373,19 +374,19 @@ RunTests::testFMadd(bool withMask=false)
     
     /* Call generated function */
     if(withMask) {
-        cout << setw(8) << left << "FMAdd" << setw(10) << "(masked)" << ": ";
+        cout << setw(10) << left << "FMAdd" << setw(10) << "(masked)" << ": ";
         for(int msk = 0; msk < RunTests::NUM_MASKS; ++msk) {
             testMaskedFMaddGenerated(ret,a,b,c, msk);
             /* Do it manually */
             for(int i=0; i < VECLEN; ++i) { 
-                ret2[i] = (msk & 1 << i ) > 0 ? c[i] + (a[i]*b[i]) : 0;
+                ret2[i] = (msk & 1 << i) > 0 ? c[i] + (a[i]*b[i]) : 0;
             }
             
             /* Check if the results match */
             for(int i = 0; i < VECLEN; i++) { 
                 double diff = ret2[i]-ret[i];
                 double rel_diff = diff/ret[2];
-                if( fabs(rel_diff) > tol ) { 
+                if( fabs(rel_diff) > tol) { 
                     std::cout << "FAIL: For mask value : " << msk << " i= " << i 
                               << " desired = " << ret2[i] 
                               << " generated=" << ret[i] << endl;
@@ -395,7 +396,7 @@ RunTests::testFMadd(bool withMask=false)
         }     
     }
     else {
-        cout << setw(8) << left << "FMAdd" << setw(10) << "(no mask)" << ": " ;    
+        cout << setw(10) << left << "FMAdd" << setw(10) << "(no mask)" << ": " ;    
         testFMaddGenerated(ret,a,b,c);
         /* Do it manually */
         for(int i=0; i < VECLEN; i++) { 
@@ -405,20 +406,53 @@ RunTests::testFMadd(bool withMask=false)
         for(int i=0; i < VECLEN; i++) { 
             double diff = ret2[i]-ret[i];
             double rel_diff = diff/ret[2];
-            if( fabs(rel_diff) > tol ) { 
+            if( fabs(rel_diff) > tol) { 
                 std::cout << "FAIL: i= " << i << " desired = " 
                   << ret2[i] << " generated=" << ret[i] << endl;
             return 0;
             }
         }
     }
-
-
  
     std::cout << "PASS" << endl;
     return 1;
 }
 
+
+int 
+RunTests::testLoadSplitSOAFVec(int soalen, int precision)
+{
+    FVecBaseType a[VECLEN];
+    FVecBaseType b = 0.0;
+    FVecBaseType ret[VECLEN];
+    FVecBaseType ret2[VECLEN]; 
+    
+    for(int i=0; i < VECLEN; i++) {
+        a[i] = (FVecBaseType)(i+1);
+    }       
+    
+    cout << setw(20) << left << "LoadSplitSOAFVec" << ": " ;    
+    
+    testLoadSplitSOAFVecGen(ret, a, &b);
+
+    /* Do Manually */        
+    for(int i=0; i < VECLEN; i++) { 
+        ret2[i] = ((1 << (soalen -1)) & 1 << i) > 0 ? b : a[i];
+    }   
+
+    for(int i=0; i < VECLEN; i++) { 
+        double diff = ret2[i]-ret[i];
+        double rel_diff = diff/ret[2];
+        if( fabs(rel_diff) > tol) { 
+            std::cout << "FAIL: i= " << i << " desired = " 
+              << ret2[i] << " generated=" << ret[i] << endl;
+        return 0;
+        }
+    }
+
+    std::cout << "PASS" << endl;
+    return 1;    
+}
 
 int main(int argc, char *argv[]) 
 {
@@ -435,5 +469,7 @@ int main(int argc, char *argv[])
     runTest.testFnMadd(false);
     runTest.testFnMadd(true);
     runTest.testFMadd(false);
-    runTest.testFMadd(true);  
+    runTest.testFMadd(true); 
+    /* Testing for the case where SOALEN == VECLEN */  
+    runTest.testLoadSplitSOAFVec(VECLEN, PRECISION);
 }

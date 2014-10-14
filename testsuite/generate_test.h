@@ -1,7 +1,6 @@
 #ifndef __GENERATE_TEST_H__
 #define __GENERATE_TEST_H__
 
-
 class GenerateTestFns
 {
 private:
@@ -14,7 +13,9 @@ private:
      * executable and save the generated test functions there.
      */
     void createTestDir();
-
+    /**
+     * Holds the path where the generated test functions are to be saved.
+     */ 
     string outPath;
 
 public:
@@ -60,7 +61,10 @@ public:
      * as expected.
      */ 
     void generateLoadStoreFVec(bool useMask);
-
+    /**
+     * Test the loadSplitSOAFVec function
+     */
+    void generateLoadSplitSOAFVec(int precision, int soalen);
 };
 
 #endif

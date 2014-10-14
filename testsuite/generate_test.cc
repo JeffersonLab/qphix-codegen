@@ -419,7 +419,7 @@ GenerateTestFns::generateSetZero()
     storeFVec(ivector, retvec, &addr_ret, 0);
     
     out << "void testSetZeroGenerated( " 
-        << FVecBaseType <<" *ret )" << endl;
+        << FVecBaseType << " *ret )" << endl;
 
     out << "{" << endl;
 
@@ -428,6 +428,63 @@ GenerateTestFns::generateSetZero()
     }
 
     out << "}" << endl;
+    out.close();
+}
+
+void
+GenerateTestFns::generateLoadSplitSOAFVec(int precision, int soalen)
+{
+    string _tmp(outPath);
+    ofstream out;
+    out.open(_tmp.append("/gen_loadSplitSOAFVec.h").c_str(), ofstream::out | ofstream::app);        
+    string genFnName("");
+    
+    InstVector ivector;
+    FVec ldvec("ldvec");
+    GenericAddress addr_a1("a1",0);
+    GenericAddress addr_a2("a2",0);
+    GenericAddress addr_ret("addr_ret",0);
+    
+    declareFVecFromFVec(ivector,ldvec);
+    
+    /* We are handling only the cases where the soanum is not being used. */
+    if(precision == 1 && soalen == 4) 
+    {
+        loadSplitSOAFVec(ivector, ldvec, &addr_a1, &addr_a2, 0, 4, 1, "");     
+        //genFnName = "testLoadSplitSOAFVecGen_sp_v4";                   
+    }
+    else if(precision == 1 && soalen == 8)
+    {
+        loadSplitSOAFVec(ivector, ldvec, &addr_a1, &addr_a2, 0, 8, 1, ""); 
+        //genFnName = "testLoadSplitSOAFVecGen_sp_v8";
+    }
+    else if(precision == 2 && soalen == 4)
+    {
+        loadSplitSOAFVec(ivector, ldvec, &addr_a1, &addr_a2, 0, 4, 1, ""); 
+        //genFnName = "testLoadSplitSOAFVecGen_dp_v4";   
+    }      
+    else
+    {
+        cerr << "Error: Incorrect combination of Prec and SOALEN." << endl;
+        exit(1);
+    }  
+    
+    storeFVec(ivector, ldvec, &addr_ret, 0);           
+      
+    out << "void testLoadSplitSOAFVecGen( "
+        << FVecBaseType <<" *addr_ret, "
+        << FVecBaseType <<" *a1, "
+        << FVecBaseType <<" *a2)" 
+        << endl;        
+
+    out << "{" << endl;
+
+    for(unsigned int i=0; i < ivector.size(); i++) {
+        out << ivector[i]->serialize() << endl;
+    }
+
+    out << "}" << endl;   
+    out.close(); 
 }
 
 /************************** Private helper functions **************************/
@@ -498,4 +555,12 @@ int main(int argc, char *argv[])
     genInst.generateMul(false);
     genInst.generateMul(true);
     genInst.generateSetZero();
+    
+#if PRECISION == 1
+    //genInst.generateLoadSplitSOAFVec(1,4);
+    genInst.generateLoadSplitSOAFVec(1,8);
+#elif PRECISION == 2
+    generateLoadSplitSOAFVec(2,4);
+#endif            
+
 }
