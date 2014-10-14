@@ -75,7 +75,7 @@ string LoadFVec::serialize() const
         if(!a->isHalfType()) {
         
             /* Define a zero vector. */
-            buf << v.getType() << " zeroVec = (0.0);" << endl; 
+            buf << v.getType() << " zeroVec = vec_splats(0.0);" << endl; 
             
             /* Load the vector from memory. */
             buf << v.getName() << " = vec_ld(0, " << a->serialize() << ");" 
