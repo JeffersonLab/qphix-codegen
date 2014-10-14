@@ -58,7 +58,8 @@ string LoadFVec::serialize() const
 
     if(mask.empty()) {
         if(!a->isHalfType()) {
-            buf << v.getName() << " = vec_ld(0, " << a->serialize() << ");" 
+     	    buf << v.getName() << " = vec_ld(0, const_cast<double *>(" 
+                << a->serialize() << "));" 
                 << endl;
         }
         else {
@@ -78,7 +79,8 @@ string LoadFVec::serialize() const
             buf << v.getType() << " zeroVec = vec_splats(0.0);" << endl; 
             
             /* Load the vector from memory. */
-            buf << v.getName() << " = vec_ld(0, " << a->serialize() << ");" 
+            buf << v.getName() << " = vec_ld(0,const_cast<double *>(" 
+                << a->serialize() << "));" 
                 << endl;
                 
             /* Blend with the zero vector. Retain the elements that have the 
@@ -345,7 +347,7 @@ public:
                 if(soalen == 4) {
                     buf << v.getName() 
                         << " =  vec_perm(" 
-                        << "vec_ld(0, " << a1->serialize() << "), "
+                        << "vec_ld(0, const_cast<double *> (" << a1->serialize() << ")), "
                         << "vec_splats(*" << a2->serialize() << "), "
                         << "_v4d_int2mask("
                         << (1 << (soalen-1)) << "));" 
@@ -370,7 +372,7 @@ public:
                 if(soalen == 4) {
                     buf << v.getName() 
                         << " =  vec_perm("
-                        << "vec_ld(0, (" << a2->serialize() << ")-1), "
+                        << "vec_ld(0, (const_cast<double *>(" << a2->serialize() << "))-1), "
                         << "vec_splats(*" << a1->serialize() << "), "
                         << " _v4d_int2mask(1));" 
                         << endl;
