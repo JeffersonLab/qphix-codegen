@@ -560,7 +560,7 @@ int main(int argc, char *argv[])
     //genInst.generateLoadSplitSOAFVec(1,4);
     genInst.generateLoadSplitSOAFVec(1,8);
 #elif PRECISION == 2
-    generateLoadSplitSOAFVec(2,4);
+    genInst.generateLoadSplitSOAFVec(2,4);
 #endif            
 
 }

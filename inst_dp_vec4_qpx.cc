@@ -16,7 +16,7 @@ FVec::FVec(const string& name_) : name(name_), type(FVECTYPE) {}
 
 string DeclareFVec::serialize() const
 {
-    return v.getType() + " " + v.getName() + " = (0.0);";
+    return v.getType() + " " + v.getName() + " = vec_splats(0.0);";
 }
 
 string InitFVec::serialize() const
