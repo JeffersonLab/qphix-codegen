@@ -82,7 +82,7 @@ ENABLE_STREAMING_STORES  -- Enable streaming stores for output spinor
 USE_PACKED_GAUGES        -- Use 2D xy packing for Gauges -- enabled
 USE_PACKED_CLOVER        -- Use 2D xy packing for Clover -- enabled
 
-AVX2	           -- Generate AVX2 code (experimental)
+AVX2               -- Generate AVX2 code (experimental)
 AVX512             -- Together with mode=mic: Generate AVX512 code for 
                       Knight's Landing (untested)
 
