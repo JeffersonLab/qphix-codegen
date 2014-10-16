@@ -491,24 +491,22 @@ public:
 
         if(!a->isHalfType()) {
             if(pos % 2 == 0) {
-                int a =  ((pos/2)&1)?2:0;
+                int p =  ((pos/2)&1)?2:0;
                 buf << "vec_sts(" 
                     << "vec_promote(" 
-                        << "vec_extract(" << v.getName() << "," << a  << ")"
-                        << , 0
-                        << ")"
+                        << "vec_extract(" << v.getName() << "," << p  << ")"
+                        << ", 0)"
                     << ", 0"
                     << ", " << a->serialize()
                     << ");"
                     << endl;
             }
             else {
-                int a =  ((pos/2)&1)?3:1;
+                int p =  ((pos/2)&1)?3:1;
                 buf << "vec_sts(" 
                     << "vec_promote(" 
-                        << "vec_extract(" << v.getName() << "," << a  << ")"
-                        << , 0
-                        << ")"
+                        << "vec_extract(" << v.getName() << "," << p  << ")"
+                        << ", 0)"
                     << ", 0"
                     << ", " << a->serialize()
                     << ");"
