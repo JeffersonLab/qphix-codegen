@@ -456,7 +456,7 @@ RunTests::testLoadSplitSOAFVec(int soalen, int precision)
 }
 
 int 
-RunTests::testPackFVec(int possibleMask)
+RunTests::testPackFVec(int possibleMask, int mask)
 {
     FVecBaseType a[VECLEN];
     FVecBaseType ret[VECLEN];
@@ -464,7 +464,7 @@ RunTests::testPackFVec(int possibleMask)
     FVecBaseType ret2[VECLEN];
     
     for(int i=0; i < VECLEN; i++) {
-        a[i] = (FVecBaseType)(i+1.5d);
+        a[i] = (FVecBaseType)(i+1.5);
     }      
     
     /*
@@ -481,10 +481,9 @@ RunTests::testPackFVec(int possibleMask)
     /* The CondExtractFVecElement would extract the FVec element based on
      * two conditions - a) possibleMask and b) mask. 
      *
-     * PossibleMask determines two things, depending on if it is odd/even the
-     * lower/upper 128 bits (for 256 bit vectors) is selected. Then the 0 to 
-     * (VECLEN - 1) LS bits of the possibleMask are checked and if found to be 
-     * set, the element at the corresponding position of the FVec is extracted. 
+     * PossibleMask determines two things, depending on which bit position(s) of 
+     * the number is set, the lower or upper 128 bits (for 256 bit vectors) of 
+     * the FVec are selected. 
      * 
      * In the likelihood of more than one bit being set, the mask comes into 
      * play. Only the bit position that is also set in the mask is then used to
@@ -496,28 +495,26 @@ RunTests::testPackFVec(int possibleMask)
      */
 
     FVecBaseType _tmp[VECLEN/2];
-    
-    if(possibleMask & 1) {
-        for(int i = 0; i < VECLEN/2; ++i)
-            _tmp[i] = a[VECLEN/2 + i];
+
+    int half, pos;
+
+    for(int i = 0; i < VECLEN; ++i) {
+        if(possibleMask & (1 << i) && (mask & (1 << i))) {
+            half = i / (VECLEN/2);
+            pos  = i % (VECLEN/2);
+        }
     }
+    
+    if(half) {
+        for(int i = 0; i < VECLEN/2; ++i)
+            _tmp[i] = a[VECLEN/2 + i];    
+    }  
     else {
         for(int i = 0; i < VECLEN/2; ++i)
             _tmp[i] = a[i];        
-    }
-
-    int pos;
-    for(int i = 0; i < VECLEN; i++) {
-        if(possibleMask & (1 << i))
-            pos = i;    
-    }
-
-#if PRECISION == 1 && VECLEN == 8
-    ret2[0] = _tmp[pos % 4];
-#elif PRECISION == 2 && VECLEN == 4
-    ret2[0] = _tmp[pos % 2];
-#endif    
+    }    
     
+    ret2[0] = _tmp[pos];
     
     //__m256 ldvec = _mm256_load_ps((a));
     //((int*)((ret1)+0))[0] = _mm_extract_ps(_mm256_extractf128_ps(ldvec, 0),3);
@@ -559,5 +556,5 @@ int main(int argc, char *argv[])
     /* Testing for the case where SOALEN == VECLEN */  
     runTest.testLoadSplitSOAFVec(VECLEN, PRECISION);
     
-    runTest.testPackFVec(VECLEN);
+    runTest.testPackFVec(VECLEN, VECLEN);
 }
