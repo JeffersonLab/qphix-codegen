@@ -65,6 +65,10 @@ public:
      * Test the loadSplitSOAFVec function
      */
     void generateLoadSplitSOAFVec(int precision, int soalen);
+    /**
+     * Test the packFVec function
+     */
+    void generatePackFVec(int possibleMask, string mask);    
 };
 
 #endif

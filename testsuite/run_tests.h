@@ -18,6 +18,7 @@ public:
     int testFMadd(bool withMask);
     int testFnMadd(bool withMask);
     int testLoadSplitSOAFVec(int soalen, int precision);
+    int testPackFVec(int possibleMask);
 };
 
 #endif

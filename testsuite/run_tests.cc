@@ -29,6 +29,7 @@ using namespace std;
 #include "test_fns/gen_fnMadd.h"
 #include "test_fns/gen_fMadd.h"
 #include "test_fns/gen_loadSplitSOAFVec.h"
+#include "test_fns/gen_packFVec.h"
 
 /** Testing the load-store */
 int 
@@ -454,6 +455,91 @@ RunTests::testLoadSplitSOAFVec(int soalen, int precision)
     return 1;    
 }
 
+int 
+RunTests::testPackFVec(int possibleMask)
+{
+    FVecBaseType a[VECLEN];
+    FVecBaseType ret[VECLEN];
+    //FVecBaseType ret1[VECLEN];    
+    FVecBaseType ret2[VECLEN];
+    
+    for(int i=0; i < VECLEN; i++) {
+        a[i] = (FVecBaseType)(i+1.5d);
+    }      
+    
+    /*
+    std::cout << "A : " ;
+    for(int i = 0; i < VECLEN; ++i)
+        std::cout << a[i] << " ";
+    std::cout << std::endl;
+    */
+    
+    cout << setw(20) << left << "PackFVec" << ": " ;   
+    testpackFVec(ret, a);
+
+    /* Do manually */
+    /* The CondExtractFVecElement would extract the FVec element based on
+     * two conditions - a) possibleMask and b) mask. 
+     *
+     * PossibleMask determines two things, depending on if it is odd/even the
+     * lower/upper 128 bits (for 256 bit vectors) is selected. Then the 0 to 
+     * (VECLEN - 1) LS bits of the possibleMask are checked and if found to be 
+     * set, the element at the corresponding position of the FVec is extracted. 
+     * 
+     * In the likelihood of more than one bit being set, the mask comes into 
+     * play. Only the bit position that is also set in the mask is then used to
+     * select the FVec element.
+     */
+     
+    /* In this test case, specifically possibleMasks that have just a single bit 
+     * set are used.
+     */
+
+    FVecBaseType _tmp[VECLEN/2];
+    
+    if(possibleMask & 1) {
+        for(int i = 0; i < VECLEN/2; ++i)
+            _tmp[i] = a[VECLEN/2 + i];
+    }
+    else {
+        for(int i = 0; i < VECLEN/2; ++i)
+            _tmp[i] = a[i];        
+    }
+
+    int pos;
+    for(int i = 0; i < VECLEN; i++) {
+        if(possibleMask & (1 << i))
+            pos = i;    
+    }
+
+#if PRECISION == 1 && VECLEN == 8
+    ret2[0] = _tmp[pos % 4];
+#elif PRECISION == 2 && VECLEN == 4
+    ret2[0] = _tmp[pos % 2];
+#endif    
+    
+    
+    //__m256 ldvec = _mm256_load_ps((a));
+    //((int*)((ret1)+0))[0] = _mm_extract_ps(_mm256_extractf128_ps(ldvec, 0),3);
+    
+    //std::cout << "RET[0] "  << ret[0]  << std::endl;
+    //std::cout << "RET1[0] " << ret1[0] << std::endl;    
+    //std::cout << "RET2[0] " << ret2[0] << std::endl;
+    
+    
+    double diff = ret2[0]-ret[0];
+    //double rel_diff = diff/ret[2];
+    if( fabs(diff) > tol) { 
+        std::cout << "FAIL: i = 0 desired = " 
+          << ret2[0] << " generated=" << ret[0] << endl;
+    return 0;
+    }
+
+    std::cout << "PASS" << endl;
+    return 1;        
+
+}
+
 int main(int argc, char *argv[]) 
 {
     RunTests runTest;
@@ -472,4 +558,6 @@ int main(int argc, char *argv[])
     runTest.testFMadd(true); 
     /* Testing for the case where SOALEN == VECLEN */  
     runTest.testLoadSplitSOAFVec(VECLEN, PRECISION);
+    
+    runTest.testPackFVec(VECLEN);
 }

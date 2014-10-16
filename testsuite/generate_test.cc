@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <cassert>
 using namespace std;
 
 #if PRECISION == 1
@@ -437,7 +437,7 @@ GenerateTestFns::generateLoadSplitSOAFVec(int precision, int soalen)
     string _tmp(outPath);
     ofstream out;
     out.open(_tmp.append("/gen_loadSplitSOAFVec.h").c_str(), ofstream::out | ofstream::app);        
-    string genFnName("");
+    //string genFnName("");
     
     InstVector ivector;
     FVec ldvec("ldvec");
@@ -485,6 +485,41 @@ GenerateTestFns::generateLoadSplitSOAFVec(int precision, int soalen)
 
     out << "}" << endl;   
     out.close(); 
+}
+
+
+void 
+GenerateTestFns::generatePackFVec(int possibleMask, string mask)
+{
+    assert(possibleMask < (1 << VECLEN) && possibleMask >=0);
+        
+    string _tmp(outPath);
+    ofstream out;
+    out.open(_tmp.append("/gen_packFVec.h").c_str(), ofstream::out | ofstream::app);        
+
+    InstVector ivector;
+    FVec ldvec("ldvec");    
+    GenericAddress addr_a("a", 0);
+    GenericAddress addr_ret("addr_ret",0);
+
+    declareFVecFromFVec(ivector,ldvec);
+    loadFVec(ivector, ldvec, &addr_a, "");    
+    packFVec(ivector, ldvec, &addr_ret, mask, possibleMask);
+    
+    out << "void testpackFVec( "
+        << FVecBaseType <<" *addr_ret, "
+        << FVecBaseType <<" *a)" 
+        << endl;        
+
+    out << "{" << endl;
+
+    for(unsigned int i=0; i < ivector.size(); i++) {
+        out << ivector[i]->serialize() << endl;
+    }
+
+    out << "}" << endl;   
+    out.close();     
+
 }
 
 /************************** Private helper functions **************************/
@@ -561,6 +596,7 @@ int main(int argc, char *argv[])
     genInst.generateLoadSplitSOAFVec(1,8);
 #elif PRECISION == 2
     genInst.generateLoadSplitSOAFVec(2,4);
-#endif            
-
+#endif      
+    genInst.generatePackFVec(VECLEN, "1");
+    //genInst.generatePackFVec(VECLEN - 1, "5");          
 }

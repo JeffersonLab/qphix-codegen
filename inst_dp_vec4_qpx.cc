@@ -63,11 +63,10 @@ string LoadFVec::serialize() const
                 << endl;
         }
         else {
-            //FIXME
-            buf << "#error \"halftype is not supported in the inst_dp_vec4_qpx "
+            buf << "#error \"halftype is not supported in BG/Q QPX "
                    "backend\"" 
                 << endl;
-            printf("FIXME: halftype is not supported in the inst_dp_vec4_qpx "
+            printf("Error: halftype is not supported in BG/Q QPX "
                    "backend\n");
             exit(1);
         }
@@ -90,11 +89,10 @@ string LoadFVec::serialize() const
                 << "," << mask << ");" << endl;
         }
         else {
-            //FIXME
-            buf << "#error \"halftype is not supported in the inst_dp_vec4_qpx "
+            buf << "#error \"halftype is not supported in BG/Q QPX "
                    "backend\"" 
                 << endl;
-            printf("FIXME: halftype is not supported in the inst_dp_vec4_qpx "
+            printf("Error: halftype is not supported in BG/Q QPX "
                    "backend\n");
             exit(1);
         }
@@ -114,11 +112,10 @@ string StoreFVec::serialize() const
           << endl;
     }
     else {
-        //FIXME
-        buf << "#error \"halftype is not supported in the inst_dp_vec4_qpx "
+        buf << "#error \"halftype is not supported in BG/Q QPX "
                "backend\"" 
             << endl;
-        printf("FIXME: halftype is not supported in the inst_dp_vec4_qpx "
+        printf("Error: halftype is not supported in BG/Q QPX "
                "backend\n");
         exit(1);
     }
@@ -134,11 +131,10 @@ string LoadBroadcast::serialize() const
             << endl;
     }
     else {
-        //FIXME
-        buf << "#error \"halftype is not supported in the inst_dp_vec4_qpx "
+        buf << "#error \"halftype is not supported in BG/Q QPX "
                "backend\"" 
             << endl;
-        printf("FIXME: halftype is not supported in the inst_dp_vec4_qpx "
+        printf("Error: halftype is not supported in BG/Q QPX "
                "backend\n");
         exit(1);
     }
@@ -449,11 +445,10 @@ public:
                 << ");" << endl;
         }
         else {
-            //FIXME
-            buf << "#error \"halftype is not supported in the inst_dp_vec4_qpx "
+            buf << "#error \"halftype is not supported in BG/Q QPX "
                    "backend\"" 
                 << endl;
-            printf("FIXME: halftype is not supported in the inst_dp_vec4_qpx "
+            printf("Error: halftype is not supported in BG/Q QPX "
                    "backend\n");
             exit(1);
         }
@@ -496,26 +491,36 @@ public:
 
         if(!a->isHalfType()) {
             if(pos % 2 == 0) {
-                //TODO/FIXME : convert ot qpx
-                buf << "vec_st(" << a->serialize() << ", 0, "
-                    << "_mm256_extractf128_pd(" << v.getName() << ", " 
-                    << pos / 2 << ")"
-                    << ");" << endl;
+                int a =  ((pos/2)&1)?2:0;
+                buf << "vec_sts(" 
+                    << "vec_promote(" 
+                        << "vec_extract(" << v.getName() << "," << a  << ")"
+                        << , 0
+                        << ")"
+                    << ", 0"
+                    << ", " << a->serialize()
+                    << ");"
+                    << endl;
             }
             else {
-                //TODO
-                buf << "_mm_storeh_pd(" << a->serialize() 
-                    << ", _mm256_extractf128_pd(" << v.getName() << ", " 
-                    << pos / 2 << "));" << endl;
+                int a =  ((pos/2)&1)?3:1;
+                buf << "vec_sts(" 
+                    << "vec_promote(" 
+                        << "vec_extract(" << v.getName() << "," << a  << ")"
+                        << , 0
+                        << ")"
+                    << ", 0"
+                    << ", " << a->serialize()
+                    << ");"
+                    << endl;
             }
              
         }
         else {
-            //FIXME
-            buf << "#error \"halftype is not supported in the inst_dp_vec4_qpx "
+            buf << "#error \"halftype is not supported in BG/Q QPX "
                    "backend\"" 
                 << endl;
-            printf("FIXME: halftype is not supported in the inst_dp_vec4_qpx "
+            printf("Error: halftype is not supported in BG/Q QPX "
                    "backend\n");
             exit(1);
         }
