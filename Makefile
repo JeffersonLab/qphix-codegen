@@ -1,4 +1,4 @@
-mode=qpx
+mode=avx
 
 mode:=$(strip $(mode))
 ARCH=$(mode)
@@ -10,7 +10,7 @@ ifeq ($(mode),qpx)
 CXXHOST = bgclang++11 -O3 -g -Wall 
 else
 #CXXHOST  = icpc -O3 -g
-CXXHOST = g++ -O3 -g -march=corei7-avx -Wall
+CXXHOST = g++ -O2 -g -march=core2 -Wall
 endif
 
 ifeq ($(mode),mic)
@@ -200,6 +200,10 @@ cleanall:
 	rm -rf ./qpx
 	rm testsuite/generate_test.exe
 	rm testsuite/run_tests.exe
+
+
+genaxpy: libcodegen.a axpy.cc
+	$(CXXHOST) $(DEFS) -I. axpy.cc -o genaxpy -L. -lcodegen
 
 generate_test: testsuite/generate_test.cc libcodegen.a
 	$(CXXHOST) $(DEFS) -I. testsuite/generate_test.cc -o testsuite/$@.exe -L. -lcodegen
