@@ -481,6 +481,47 @@ string MovFVec::serialize() const
     }
 }
 
+string SincosFVec::serialize() const
+{
+    if(mask.empty()) {
+        return  s.getName()+" = _mm512_sin_pd( "+a.getName()+" );" + c.getName()+" = _mm512_cos_pd( "+a.getName()+" );" ;
+    }
+    else {
+        return  s.getName()+" = _mm512_mask_sin_pd( "+a.getName()+", " + mask + ", "+a.getName()+" );" + c.getName()+" = _mm512_mask_cos_pd( "+a.getName()+", " + mask + ", "+a.getName()+" );" ;
+    }
+}
+
+string SqrtFVec::serialize() const
+{
+    if(mask.empty()) {
+        return  ret.getName()+" = _mm512_sqrt_pd( "+a.getName()+" );" ;
+    }
+    else {
+        return  ret.getName()+" = _mm512_mask_sqrt_pd( "+a.getName()+", " + mask + ", "+a.getName()+" );" ;
+    }
+}
+
+string DivFVec::serialize() const
+{
+    if(mask.empty()) {
+        return  ret.getName()+" = _mm512_div_pd( "+n.getName()+"," + d.getName()+" );" ;
+    }
+    else {
+        return  ret.getName()+" = _mm512_mask_div_pd( "+n.getName()+", " + mask + ", "+n.getName()+"," + d.getName()+" );" ;
+    }
+}
+
+string FnMSub::serialize() const
+{
+    if(mask.empty()) {
+        return  ret.getName()+" = _mm512_fnmsub_pd("+a.getName()+", "+b.getName()+", "+c.getName()+");" ;
+    }
+    else {
+        return  ret.getName()+" = _mm512_mask_mov_pd(" + ret.getName() + ", " + mask + ", _mm512_fnmsub_pd(" +a.getName()+", "+b.getName()+", "+c.getName()+"));" ;
+    }
+}
+
+
 class Perm64x2 : public Instruction
 {
 public:

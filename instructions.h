@@ -542,6 +542,74 @@ private:
 };
 
 
+//NEW:
+
+class SincosFVec : public Instruction
+{
+public:
+    SincosFVec( const FVec& a_, const FVec& s_, const FVec& c_, const string& mask_) : a(a_), s(s_), c(c_), mask(mask_) {}
+    string serialize() const;
+    int numArithmeticInst() const
+    {
+        return 1;
+    }
+private:
+    const FVec a;
+    const FVec s;
+    const FVec c;
+    const string mask;
+};
+
+class SqrtFVec : public Instruction
+{
+public:
+    SqrtFVec( const FVec& ret_, const FVec& a_, const string& mask_) : ret(ret_), a(a_), mask(mask_) {}
+    string serialize() const;
+    int numArithmeticInst() const
+    {
+        return 1;
+    }
+private:
+    const FVec ret;
+    const FVec a;
+    const string mask;
+};
+
+class DivFVec : public Instruction
+{
+public:
+    DivFVec( const FVec& ret_, const FVec& n_, const FVec& d_, const string& mask_) : ret(ret_), n(n_), d(d_), mask(mask_) {}
+    string serialize() const;
+    int numArithmeticInst() const
+    {
+        return 1;
+    }
+private:
+    const FVec ret;
+    const FVec n;
+    const FVec d;
+    const string mask;
+};
+
+class FnMSub : public Instruction
+{
+public:
+    FnMSub( const FVec& ret_, const FVec& a_, const FVec& b_, const FVec& c_, const string& mask_) : ret(ret_), a(a_), b(b_), c(c_), mask(mask_) {}
+    string serialize() const;
+    int numArithmeticInst() const
+    {
+        return 1;
+    }
+private:
+    const FVec ret;
+    const FVec a;
+    const FVec b;
+    const FVec c;
+    const string mask;
+};
+
+
+
 void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask);
 void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen);
 
@@ -672,6 +740,27 @@ inline void declareMask(InstVector& ivector, const string name, const string val
 inline void intToMask(InstVector& ivector, const string maskname, const string intname)
 {
     ivector.push_back(new IntToMask(maskname, intname));
+}
+
+//needed for the reconstruction:
+inline void sincosFVec(InstVector& ivector, const FVec& a, const FVec& s, const FVec& c, string mask = "")
+{
+    ivector.push_back(new sincosFVec(a, s, c, mask));
+}
+
+inline void sqrtFVec(InstVector& ivector, const FVec& ret, const FVec& a, string mask = "")
+{
+    ivector.push_back(new SqrtFVec(ret, a, mask));
+}
+
+inline void divFVec(InstVector& ivector, const FVec& ret, const FVec& n, const FVec& d, string mask = "")
+{
+    ivector.push_back(new DivFVec(ret, n, d, mask));
+}
+
+inline void fnmsubFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, const FVec& c, string mask = "")
+{
+    ivector.push_back(new FnMSub(ret, a, b, c, mask));
 }
 
 #endif

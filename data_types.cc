@@ -320,7 +320,7 @@ void LoadFullGaugeDir(InstVector& ivector, const FVec ret[3][3][2], string& base
 {
     int nrows = 3;
 
-    if(compress12 == true) {
+    if(compress12 == true ) {
         nrows = 2;
     }
 
@@ -331,6 +331,47 @@ void LoadFullGaugeDir(InstVector& ivector, const FVec ret[3][3][2], string& base
         }
     }
 }
+
+void LoadFullGaugeDir_v2(InstVector& ivector, const FVec ret[3][3][2], string& base, string& offsets, int dir, int compress)
+{
+    int nrows = 3; //uncompressed field
+
+    if(compress == 12 || compress == 13) {
+        const int nrows = 2;
+        //
+        for(int c1=0; c1 < nrows; c1++) {
+          for(int c2=0; c2 < 3; c2++) {
+              readFVecGauge(ivector, ret[c1][c2][RE], base, offsets, dir, c1, c2, RE);
+              readFVecGauge(ivector, ret[c1][c2][IM], base, offsets, dir, c1, c2, IM);
+          }
+    }
+    else if(compress == 8 || compress == 9) {
+
+        readFVecGauge(ivector, ret[0][1][RE], base, offsets, dir, 0, 1, RE);
+        readFVecGauge(ivector, ret[0][1][IM], base, offsets, dir, 0, 1, IM);
+
+        readFVecGauge(ivector, ret[0][2][RE], base, offsets, dir, 0, 2, RE);
+        readFVecGauge(ivector, ret[0][2][IM], base, offsets, dir, 0, 2, IM);
+
+        readFVecGauge(ivector, ret[1][0][RE], base, offsets, dir, 1, 0, RE);
+        readFVecGauge(ivector, ret[1][0][IM], base, offsets, dir, 1, 0, IM);
+
+        readFVecGauge(ivector, ret[2][1][RE], base, offsets, dir, 2, 1, RE);
+        readFVecGauge(ivector, ret[2][1][IM], base, offsets, dir, 2, 1, IM);
+
+    }
+    else {//no reconstruction:
+      const int nrows = 3;
+      //
+      for(int c1=0; c1 < nrows; c1++) {
+        for(int c2=0; c2 < 3; c2++) {
+            readFVecGauge(ivector, ret[c1][c2][RE], base, offsets, dir, c1, c2, RE);
+            readFVecGauge(ivector, ret[c1][c2][IM], base, offsets, dir, c1, c2, IM);
+        }
+      }
+    }
+}
+
 
 void LoadFullCloverBlock(InstVector& ivector, const FVec diag[6], const FVec off_diag[15][2], string& base, string& offsets, int block)
 {

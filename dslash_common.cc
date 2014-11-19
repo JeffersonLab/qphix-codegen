@@ -269,6 +269,52 @@ FVec u_gauge[3][3][2] = {
     { {u_20_re, u_20_im}, {u_21_re, u_21_im}, {u_22_re, u_22_im} }
 };
 
+//Improved staggered
+
+extern string lBase;
+extern string lOffs;
+
+extern string lphaseBase;
+extern string lphaseOffs;
+
+extern string sign_factor_name;
+extern string sign_factor_inv_name;
+
+FVec sign_factor_vec("sign_factor_vec");
+FVec sign_factor_inv_vec("sign_factor_inv_vec");
+
+FVec lphase("lphase");
+
+FVec ll_00_re("ll_00_re");
+FVec ll_00_im("ll_00_im");
+FVec ll_10_re("ll_10_re");
+FVec ll_10_im("ll_10_im");
+FVec ll_20_re("ll_20_re");
+FVec ll_20_im("ll_20_im");
+
+FVec ll_01_re("ll_01_re");
+FVec ll_01_im("ll_01_im");
+FVec ll_11_re("ll_11_re");
+FVec ll_11_im("ll_11_im");
+FVec ll_21_re("ll_21_re");
+FVec ll_21_im("ll_21_im");
+
+FVec ll_02_re("ll_02_re");
+FVec ll_02_im("ll_02_im");
+FVec ll_12_re("ll_12_re");
+FVec ll_12_im("ll_12_im");
+FVec ll_22_re("ll_22_re");
+FVec ll_22_im("ll_22_im");
+
+
+FVec l_link[3][3][2] = {
+    { {ll_00_re, ll_00_im}, {ll_01_re, ll_01_im}, {ll_02_re, ll_02_im} },
+    { {ll_10_re, ll_10_im}, {ll_11_re, ll_11_im}, {ll_12_re, ll_12_im} },
+    { {ll_20_re, ll_20_im}, {ll_21_re, ll_21_im}, {ll_22_re, ll_22_im} }
+};
+
+//end staggered
+
 void declare_b_Spins(InstVector& ivector)
 {
     for(int s=0; s < 2; s++) {
@@ -508,6 +554,18 @@ void mulConjCVec(InstVector& ivector, FVec *r, FVec *s1, FVec *s2, string &mask)
     fmaddFVec(ivector, r[RE], s1[IM], s2[IM], r[RE], mask);
     mulFVec(ivector, r[IM], s1[RE], s2[IM], mask);
     fnmaddFVec(ivector, r[IM], s1[IM], s2[RE], r[IM], mask);
+}
+
+// r = s1'*s2'
+//r[RE] = (s1[RE]*s2[RE])-(s1[IM]*s2[IM])
+//r[IM] = -(s1[RE]*s2[IM])-(s1[IM]*s2[RE])
+void mulConj2CVec(InstVector& ivector, FVec *r, FVec *s1, FVec *s2, string &mask)
+{
+    mulFVec(ivector, r[RE], s1[IM], s2[IM], mask);
+    fnmaddFVec(ivector, r[RE], s1[RE], s2[RE], r[RE], mask);
+    //
+    mulFVec(ivector, r[IM], s1[RE], s2[IM], mask);
+    fnmsubFVec(ivector, r[IM], s1[IM], s2[RE], r[IM], mask);
 }
 
 // r = s1'*s2+s3
@@ -780,6 +838,152 @@ void loadGaugeDir(InstVector& ivector, int dir, bool compress12)
         }
     }
 }
+
+//reconstruction routines for improved staggered fermions
+//let's admit for now that sign factor is precomputed (sign_factor=soeff*sign, coeff = 24*tadpole_coeff*tadpole_coeff)
+
+void loadLongLinkDir(InstVector& ivector, int dir, int compress)//8,9,12 or 13 reconstruction
+{
+    string mask;
+
+    declareFVecFromFVec(ivector, sign_factor_vec);//warning this is not constant, must be declared elsewhere
+    loadBroadcastScalar(ivector, sign_factor_vec, sign_factor_name, GaugeType);
+
+    PrefetchL1FullGaugeDirIn(ivector, lBase, lOffs, dir, compress);//Note: prefetch is the same as for the wilson case. 
+    LoadFullGaugeDir_v2(ivector, l_link, lBase, lOffs, dir, compress);//load compressed field, 12-recon and 8-recon is supported
+
+    if(compress == 13 /*|| compress ==9*/)//not implemented yet!
+       LoadPhaseDir(ivector, lphase, lphaseBase, lphaseOffs, dir);//lphase = 6*pi*phase_array[dir][idx] for 13 reconstruct, 2*pi*phase_array[dir][idx] for 9 reconstruct 
+
+    if(compress == 8)//warning this is not constant, must be declared elsewhere
+    {
+
+      declareFVecFromFVec(ivector, sign_factor_inv_vec);
+      loadBroadcastScalar(ivector, sign_factor_inv_vec, sign_factor_inv_name, GaugeType);
+
+    }
+
+    if( compress == 12 || compress == 13) {
+        //printf("Using Compressed Gauges\n");
+        for(int c = 0; c < 3; c++) 
+        {
+            Conj_CrossProd(ivector, l_link[2][c], l_link[0][(c+1)%3], l_link[1][(c+2)%3], l_link[0][(c+2)%3], l_link[1][(c+1)%3], mask);
+            //now scale it:
+            mulFVec(ivector, l_link[2][c][RE], l_link[2][c][RE], sign_factor_vec);
+            mulFVec(ivector, l_link[2][c][IM], l_link[2][c][IM], sign_factor_vec);
+        }
+        //
+        if(compress == 13)
+        {
+            sincosFVec(ivector, lphase, tmp_1_im, tmp_1_re, "");
+
+            FVec res1[2] = {tmp_1_re, tmp_1_im}; 
+            FVec res2[2] = {tmp_2_re, tmp_2_im}; 
+
+            for(int c = 0; c < 3; c++) 
+            {
+               mulCVec(ivector, res2, res1, l_link[2][c], "");
+               movCVec(ivector, l_link[2][c], res2, "")
+            }
+        }
+    }
+    else if (compress == 8 || compress == 9)
+    {
+
+        FVec res1[2] = {tmp_1_re, tmp_1_im}; 
+        FVec res2[2] = {tmp_2_re, tmp_2_im}; 
+
+        ////some preliminary work:
+        ////tmp1_re = g01'*g01+g02'*g02;
+        mulFVec(ivector, tmp_3_re, l_link[0][1][RE], l_link[0][1][RE], "");
+        fmaddFVec(ivector, tmp_3_re, l_link[0][1][IM], l_link[0][1][IM], tmp_1_re, "");
+        fmaddFVec(ivector, tmp_3_re, l_link[0][2][RE], l_link[0][2][RE], tmp_1_re, "");
+        fmaddFVec(ivector, tmp_3_re, l_link[0][2][IM], l_link[0][2][IM], tmp_1_re, "");
+        //
+        mulFVec(ivector, tmp_3_im, sign_factor_inv_vec, sign_factor_inv_vec, "");
+        //
+        subFVec(ivector, tmp_1_re, tmp_3_im, tmp_3_re, "");
+        //
+        sqrtFVec(ivector, tmp_1_im, tmp_1_re);//is it safe?
+        //
+        sincosFVec(ivector, l_link[2][1][RE], tmp_2_im, tmp_2_re, "");
+        //
+        mulFVec(ivector, l_link[0][0][RE], tmp_2_re, tmp_1_im, "");
+        //
+        mulFVec(ivector, l_link[0][0][IM], tmp_2_im, tmp_1_im, "");
+        //
+        fmaddFVec(ivector, tmp_1_im, l_link[0][1][RE], l_link[0][1][RE], tmp_1_re, "");
+        fmaddFVec(ivector, tmp_1_re, l_link[0][1][IM], l_link[0][1][IM], tmp_1_im, "");
+        //
+        sincosFVec(ivector, l_link[2][1][IM], tmp_2_im, tmp_2_re, "");
+        //
+        subFVec(ivector, tmp_1_re, tmp_3_im, tmp_1_re, "");
+        //
+        sqrtFVec(ivector, tmp_1_im, tmp_1_re);//is it safe?
+        //
+        mulFVec(ivector, l_link[2][0][RE], tmp_2_re, tmp_1_im, "");
+        //
+        mulFVec(ivector, l_link[2][0][IM], tmp_2_im, tmp_1_im, "");
+        ////
+        divFVec(ivector, tmp_1_re, sign_factor_inv_vec, tmp_3_im, "" );
+        //
+        ////
+        mulConjCVec(ivector, res2, l_link[0][0], l_link[1][0], "");//A
+        //
+        mulFVec(ivector, tmp_4_re, tmp_2_re, sign_factor_vec, "");
+        //
+        mulFVec(ivector, tmp_4_im, tmp_2_im, sign_factor_vec, "");
+        //
+        mulConj2CVec(ivector, l_link[1][1], l_link[2][0], l_link[0][2], "" );
+        //
+        fmaddCVec(ivector, res2, res4, l_link[0][1],  l_link[1][1], "");
+        //
+        nmulFVec(ivector, l_link[1][1][RE], tmp_2_re, tmp_1_re, "");//negate!
+        //
+        nmulFVec(ivector, l_link[1][1][IM], tmp_2_im, tmp_1_re, "");//negate!
+        //
+        ////
+        mulConj2CVec(ivector, l_link[1][2], l_link[2][0], l_link[0][1], "" );
+        //
+        fnmaddCVec(ivector, res2, res4, l_link[0][2],  l_link[1][2], "");
+        //
+        mulFVec(ivector, l_link[1][2][RE], tmp_2_re, tmp_1_re, "");
+        //
+        mulFVec(ivector, l_link[1][2][IM], tmp_2_im, tmp_1_re, "");
+
+        ////////////////
+
+        mulConjCVec(ivector, res2, l_link[0][0], l_link[2][0], "");//A
+        //
+        mulFVec(ivector, tmp_4_re, tmp_2_re, sign_factor_vec, "");
+        //
+        mulFVec(ivector, tmp_4_im, tmp_2_im, sign_factor_vec, "");
+        //
+        mulConj2CVec(ivector, l_link[2][1], l_link[1][0], l_link[0][2], "" );
+        //
+        nfmaddCVec(ivector, res2, res4, l_link[0][1],  l_link[2][1], "");
+        //
+        mulFVec(ivector, l_link[2][1][RE], tmp_2_re, tmp_1_re, "");
+        //
+        mulFVec(ivector, l_link[2][1][IM], tmp_2_im, tmp_1_re, "");
+        //
+        ////
+        mulConj2CVec(ivector, l_link[2][2], l_link[1][0], l_link[0][1], "" );
+        //
+        fmaddCVec(ivector, res2, res4, l_link[0][2],  l_link[2][2], "");
+        //
+        nmulFVec(ivector, l_link[2][2][RE], tmp_2_re, tmp_1_re, "");//negate!
+        //
+        nmulFVec(ivector, l_link[2][2][IM], tmp_2_im, tmp_1_re, "");//negate!
+
+        if(compress == 9)
+        {
+         //add stuff here...
+        }        
+
+    }
+}
+
 
 void matMultVec(InstVector& ivector, bool adjMul, int s)
 {

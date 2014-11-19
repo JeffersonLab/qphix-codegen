@@ -467,6 +467,47 @@ string MovFVec::serialize() const
     }
 }
 
+string SincosFVec::serialize() const
+{
+    if(mask.empty()) {
+        return  s.getName()+" = _mm512_sin_ps( "+a.getName()+" );" + c.getName()+" = _mm512_cos_ps( "+a.getName()+" );" ;
+    }
+    else {
+        return  s.getName()+" = _mm512_mask_sin_ps( "+a.getName()+", " + mask + ", "+a.getName()+" );" + c.getName()+" = _mm512_mask_cos_ps( "+a.getName()+", " + mask + ", "+a.getName()+" );" ;
+    }
+}
+
+string SqrtFVec::serialize() const
+{
+    if(mask.empty()) {
+        return  ret.getName()+" = _mm512_sqrt_ps( "+a.getName()+" );" ;
+    }
+    else {
+        return  ret.getName()+" = _mm512_mask_sqrt_ps( "+a.getName()+", " + mask + ", "+a.getName()+" );" ;
+    }
+}
+
+string DivFVec::serialize() const
+{
+    if(mask.empty()) {
+        return  ret.getName()+" = _mm512_div_ps( "+n.getName()+"," + d.getName()+" );" ;
+    }
+    else {
+        return  ret.getName()+" = _mm512_mask_div_ps( "+n.getName()+", " + mask + ", "+n.getName()+"," + d.getName()+" );" ;
+    }
+}
+
+string FnMSub::serialize() const
+{
+    if(mask.empty()) {
+        return  ret.getName()+" = _mm512_fnmsub_ps("+a.getName()+", "+b.getName()+", "+c.getName()+");" ;
+    }
+    else {
+        return  ret.getName()+" = _mm512_mask_mov_ps(" + ret.getName() + ", " + mask + ", _mm512_fnmsub_ps(" +a.getName()+", "+b.getName()+", "+c.getName()+"));" ;
+    }
+}
+
+
 class Perm32x4 : public Instruction
 {
 public:
