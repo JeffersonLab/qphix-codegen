@@ -10,7 +10,8 @@ ifeq ($(mode),qpx)
 CXXHOST = bgclang++11 -O3 -g -Wall 
 else
 #CXXHOST  = icpc -O3 -g
-CXXHOST = g++ -O3 -g -march=corei7-avx -Wall
+#CXXHOST = g++ -O3 -g -march=corei7-avx -Wall
+CXXHOST = bgclang++11 -O3 -g -Wall 
 endif
 
 ifeq ($(mode),mic)
@@ -36,6 +37,7 @@ ifeq ($(mode), qpx)
 override VECLEN=4
 override PRECISION=2
 override SOALEN=4
+DEFS += -DNO_HW_MASKING
 yesnolist += QPX
 endif
 
@@ -198,8 +200,8 @@ cleanall:
 	rm -rf ./sse
 	rm -rf ./scalar
 	rm -rf ./qpx
-	rm testsuite/generate_test.exe
-	rm testsuite/run_tests.exe
+	rm -f testsuite/generate_test.exe
+	rm -f testsuite/run_tests.exe
 
 generate_test: testsuite/generate_test.cc libcodegen.a
 	$(CXXHOST) $(DEFS) -I. testsuite/generate_test.cc -o testsuite/$@.exe -L. -lcodegen

@@ -341,13 +341,16 @@ public:
         if(!a1->isHalfType()) {
             if(forward) {
                 if(soalen == 4) {
-                    buf << v.getName() 
-                        << " =  vec_perm(" 
-                        << "vec_ld(0, const_cast<double *> (" << a1->serialize() << ")), "
-                        << "vec_splats(*" << a2->serialize() << "), "
-                        << "_v4d_int2mask("
-                        << (1 << (soalen-1)) << "));" 
-                        << endl;
+		  buf   << "pctl1 = vec_lvsl(0, const_cast<double *> (" << a1->serialize() << "));\n"
+                        << "pctl2 = vec_lvsl(0, const_cast<double *> (" << a2->serialize() << "));\n"
+
+                        << "v1    =  vec_ld(0, const_cast<double *> (" << a1->serialize() << "));\n"
+	                << "v2    =  vec_ld(0, const_cast<double *> (" << a2->serialize() << "));\n"
+	
+                        << v.getName() << " = vec_perm(vec_perm(v1, v2, pctl1)"
+                        "                            , vec_perm(v2, v1, pctl2)"
+                        "                            , vec_gpci(00124));\n"
+		        << endl;
                 }
                 else {
                      buf << "#error\"soalen 2 is not supported in "
@@ -355,22 +358,19 @@ public:
                      printf("FIXME: soalen 2 is not supported in "
                             "the QPX backend\n");
                      exit(1);
-                     //FIXME
-                     //buf << v.getName() << " =  _mm256_insertf128_pd(" 
-                     //    << v.getName() << ", _mm_blend_pd(_mm_loadu_pd(" 
-                     //    << a1->serialize() << "), _mm_loaddup_pd(" 
-                     //    << a2->serialize() << "), " << (1 << (soalen-1)) 
-                     //    << "), " << soanum << ");" 
-                     //    << endl;
                 }
             }
             else {
                 if(soalen == 4) {
-                    buf << v.getName() 
-                        << " =  vec_perm("
-                        << "vec_ld(0, (const_cast<double *>(" << a2->serialize() << "))-1), "
-                        << "vec_splats(*" << a1->serialize() << "), "
-                        << " _v4d_int2mask(1));" 
+                  buf   << "pctl1 = vec_lvsl(0, const_cast<double *> (" << a1->serialize() << "));\n"
+                        << "pctl2 = vec_lvsl(0, const_cast<double *> (" << a2->serialize() << "));\n"
+
+                        << "v1    =  vec_ld(0, const_cast<double *> (" << a1->serialize() << "));\n"
+	                << "v2    =  vec_ld(0, const_cast<double *> (" << a2->serialize() << "));\n"
+	
+                        << v.getName() << " = vec_perm(vec_perm(v1, v2, pctl1)"
+                        "                            , vec_perm(v2, v1, pctl2)"
+                        "                            , vec_gpci(00456));\n"
                         << endl;
                 }
                 //FIXME
@@ -381,11 +381,6 @@ public:
                     printf("FIXME: soalen 2 is not supported in " 
                            "the QPX backend\n");
                     exit(1);
-                    //buf << v.getName() << " =  _mm256_insertf128_pd(" 
-                    //    << v.getName() << ", _mm_blend_pd(_mm_loadu_pd((" 
-                    //    << a2->serialize() << ")-1), _mm_loaddup_pd(" 
-                    //    << a1->serialize() << "), 1), " 
-                    //    << soanum << ");" << endl;
                 }
             }
         }

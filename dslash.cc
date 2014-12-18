@@ -149,6 +149,15 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
                 declareFVecFromFVec(ivector, beta_vec);
                 loadBroadcastScalar(ivector, beta_vec, beta_names[d], SpinorType);
 
+#ifdef QPX
+		// declare temps for the LoadSplitFVec
+		FVec pctl1("pctl1"), pctl2("pctl2"), v1("v1"), v2("v2");
+		declareFVecFromFVec(ivector, pctl1);
+		declareFVecFromFVec(ivector, pctl2);
+		declareFVecFromFVec(ivector, v1);
+		declareFVecFromFVec(ivector, v2);
+#endif		
+
 #ifdef NO_HW_MASKING
 
                 if(requireAllOneCheck[dim]) {
