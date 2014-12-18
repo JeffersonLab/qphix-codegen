@@ -348,8 +348,8 @@ public:
 	                << "v2    =  vec_ld(0, const_cast<double *> (" << a2->serialize() << "));\n"
 	
                         << v.getName() << " = vec_perm(vec_perm(v1, v2, pctl1)"
-                        "                            , vec_perm(v2, v1, pctl2)"
-                        "                            , vec_gpci(00124));\n"
+                                                    ", vec_perm(v2, v1, pctl2)"
+                                                    ", vec_gpci(00124));"
 		        << endl;
                 }
                 else {
@@ -369,8 +369,8 @@ public:
 	                << "v2    =  vec_ld(0, const_cast<double *> (" << a2->serialize() << "));\n"
 	
                         << v.getName() << " = vec_perm(vec_perm(v1, v2, pctl1)"
-                        "                            , vec_perm(v2, v1, pctl2)"
-                        "                            , vec_gpci(00456));\n"
+                                                    ", vec_perm(v2, v1, pctl2)"
+                                                    ", vec_gpci(00456));"
                         << endl;
                 }
                 //FIXME

@@ -292,6 +292,17 @@ void pack_face_vec(InstVector& ivector, FVec spinor[2][3][2], proj_ops proj[], i
         intToMask(ivector, mask, "mask");
     }
 
+
+#ifdef QPX
+		// declare temps for the LoadSplitFVec
+		FVec pctl1("pctl1"), pctl2("pctl2"), v1("v1"), v2("v2");
+		declareFVecFromFVec(ivector, pctl1);
+		declareFVecFromFVec(ivector, pctl2);
+		declareFVecFromFVec(ivector, v1);
+		declareFVecFromFVec(ivector, v2);
+#endif		
+
+
     std::string out("outbuf");
     PrefetchL1HalfSpinorDir(ivector, out, dir, true, 2 /*Exclusive*/);
 
