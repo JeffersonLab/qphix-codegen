@@ -554,7 +554,7 @@ int main(int argc, char *argv[])
     runTest.testFMadd(false);
     runTest.testFMadd(true); 
     /* Testing for the case where SOALEN == VECLEN */  
-    runTest.testLoadSplitSOAFVec(VECLEN, PRECISION);
+    //runTest.testLoadSplitSOAFVec(VECLEN, PRECISION);
     
     runTest.testPackFVec(VECLEN, VECLEN);
 }

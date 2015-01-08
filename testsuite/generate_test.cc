@@ -434,6 +434,10 @@ GenerateTestFns::generateSetZero()
 void
 GenerateTestFns::generateLoadSplitSOAFVec(int precision, int soalen)
 {
+
+  // FIXME: This test case has to be redesigned. It would have to properly test for the
+  // unaligned loads.
+#if 0
     string _tmp(outPath);
     ofstream out;
     out.open(_tmp.append("/gen_loadSplitSOAFVec.h").c_str(), ofstream::out | ofstream::app);        
@@ -485,6 +489,7 @@ GenerateTestFns::generateLoadSplitSOAFVec(int precision, int soalen)
 
     out << "}" << endl;   
     out.close(); 
+#endif
 }
 
 
@@ -590,13 +595,16 @@ int main(int argc, char *argv[])
     genInst.generateMul(false);
     genInst.generateMul(true);
     genInst.generateSetZero();
-    
+
+#if 0    
 #if PRECISION == 1
     //genInst.generateLoadSplitSOAFVec(1,4);
     genInst.generateLoadSplitSOAFVec(1,8);
 #elif PRECISION == 2
     genInst.generateLoadSplitSOAFVec(2,4);
 #endif      
+#endif
     genInst.generatePackFVec(VECLEN, "1");
     //genInst.generatePackFVec(VECLEN - 1, "5");          
+
 }
