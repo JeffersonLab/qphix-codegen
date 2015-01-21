@@ -220,14 +220,14 @@ string Mul::serialize() const
 string FnMAdd::serialize() const
 {
     if(mask.empty()) {
-        return  ret.getName()+ " = vec_madd(vec_neg(" 
-                             + a.getName() + ") ,"
-                             + b.getName() + " ," 
+        return  ret.getName()+ " = vec_nmsub(" 
+                             + a.getName() + " , "
+                             + b.getName() + " , " 
                              + c.getName() + " );";
     }
     else {
         return  ret.getName()+" = vec_perm(" + ret.getName() 
-                             + ", vec_madd(vec_neg("+a.getName()+") ,"
+                             + ", vec_nmsub("+a.getName()+" ,"
                              + b.getName() + " ,"
                              + c.getName() + " ) ," + mask + ");";
     }
