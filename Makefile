@@ -7,7 +7,7 @@ CONFFILE=customMake.$(mode)
 include $(CONFFILE)
 
 ifeq ($(mode),qpx)
-CXXHOST = g++ -O3 -g -Wall 
+CXXHOST = bgclang++11 -O3 -g -Wall
 else
 #CXXHOST  = icpc -O3 -g
 CXXHOST = g++ -O3 -g -Wall
