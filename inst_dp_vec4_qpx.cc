@@ -12,6 +12,10 @@ using namespace std;
 const string fullIntMask("0xF");
 const string fullMask("0xF");
 
+string DeclareOffsets::serialize() const
+{
+  return "";
+}
 FVec::FVec(const string& name_) : name(name_), type(FVECTYPE) {}
 
 string DeclareFVec::serialize() const

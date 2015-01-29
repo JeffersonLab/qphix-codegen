@@ -17,7 +17,7 @@ void generate_code(void);
 /* FIXME: For the time being prefetching is not enabled on BGQ, so
  * leave out the mergeIvectorWithL2Prefetches.
  */
-#ifndef QPX
+#if 1
 // Merge L2 prefetches with another instruction stream
 void mergeIvectorWithL2Prefetches(InstVector& ivector, InstVector& l2prefs)
 {

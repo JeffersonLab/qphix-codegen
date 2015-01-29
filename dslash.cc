@@ -49,7 +49,8 @@ std::string ARCH_NAME="scalar";
 #endif
 #endif //PRECISION
 
-#ifndef QPX
+// thiswas #ifndef QPX
+#if 1
 void mergeIvectorWithL2Prefetches(InstVector& ivector, InstVector& l2prefs);
 #endif
 
@@ -435,7 +436,8 @@ void generate_code(void)
 
                 // Generate instructions
                 dslash_plain_body(ivector,compress12,clover,isPlus);
-#ifndef QPX
+//#ifndef QPX
+#if 1
                 mergeIvectorWithL2Prefetches(ivector, l2prefs);
 #endif
                 dumpIVector(ivector,filename.str());
