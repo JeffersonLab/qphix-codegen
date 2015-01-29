@@ -28,6 +28,8 @@ PREF_L1_GAUGE = 1
 PREF_L2_GAUGE = 1
 PREF_L1_CLOVER = 1
 PREF_L2_CLOVER = 1
+PREF_L1_HSPINOR = 1
+PREF_L2_HSPINOR = 1
 
 # Gather / Scatter options
 USE_LDUNPK = 1            # Use loadunpack instead of gather

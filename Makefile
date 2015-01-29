@@ -1,4 +1,4 @@
-mode=qpx
+mode=mic
 
 mode:=$(strip $(mode))
 ARCH=$(mode)
@@ -7,11 +7,11 @@ CONFFILE=customMake.$(mode)
 include $(CONFFILE)
 
 ifeq ($(mode),qpx)
-CXXHOST = bgclang++11 -O3 -g -Wall 
+CXXHOST = g++ -O3 -g -Wall 
 else
 #CXXHOST  = icpc -O3 -g
-#CXXHOST = g++ -O3 -g -march=corei7-avx -Wall
-CXXHOST = bgclang++11 -O3 -g -Wall 
+CXXHOST = g++ -O3 -g -Wall
+#CXXHOST = bgclang++11 -O3 -g -Wall 
 endif
 
 ifeq ($(mode),mic)
@@ -84,6 +84,8 @@ yesnolist += PREF_L1_GAUGE
 yesnolist += PREF_L2_GAUGE
 yesnolist += PREF_L1_CLOVER
 yesnolist += PREF_L2_CLOVER
+yesnolist += PREF_L1_HSPINOR
+yesnolist += PREF_L2_HSPINOR
 yesnolist += USE_LDUNPK
 yesnolist += USE_PKST
 yesnolist += USE_PACKED_GAUGES

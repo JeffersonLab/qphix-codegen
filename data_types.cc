@@ -581,9 +581,12 @@ void PrefetchL1HalfSpinorDir(InstVector& ivector, const string& base, int dir, b
 
 #endif
 
+#ifdef PREF_L1_HSPINOR
     for(unsigned int i = 0; i < (12*nActiveLanes*sizeof(SpinorBaseType)+(L1LINESIZE-1))/L1LINESIZE; i++) {
         prefetchL1(ivector, new AddressImm(new GenericAddress(base, SpinorType), i*(L1LINESIZE/sizeof(SpinorBaseType))), type);
     }
+#endif
+
 }
 
 void PrefetchL2HalfSpinorDir(InstVector& ivector, const string& base, const string& pref_dist, int dir, bool isPrefforWrite, int type)
@@ -606,8 +609,10 @@ void PrefetchL2HalfSpinorDir(InstVector& ivector, const string& base, const stri
 
 #endif
 
+#ifdef PREF_L2_HSPINOR
     for(unsigned int i = 0; i < (12*nActiveLanes*sizeof(SpinorBaseType)+(L2LINESIZE-1))/L2LINESIZE; i++) {
         prefetchL2(ivector, new AddressImm(new AddressOffset(new GenericAddress(base, SpinorType), pref_dist), i*(L2LINESIZE/sizeof(SpinorBaseType))), type);
     }
+#endif
 }
 
