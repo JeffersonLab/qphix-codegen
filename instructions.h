@@ -367,7 +367,7 @@ public:
     string serialize() const
     {
 	ostringstream stream;
-#if ARCH != bgq
+#ifndef QPX
         stream << " _mm_prefetch((const char *)( " << a->serialize() 
                << " ), " << hint << ");" << endl;
 #else
@@ -401,7 +401,7 @@ public:
     string serialize() const
     {
 	ostringstream stream;
-#if ARCH != bgq
+#ifndef QPX
         stream << " _mm_prefetch((const char *)( " << a->serialize() << " ), " 
                << hint << ");" << endl;
 #else
