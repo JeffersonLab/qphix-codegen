@@ -134,11 +134,11 @@ string LoadBroadcast::serialize() const
     std::ostringstream buf;
 
     if(!a->isHalfType()) {
-        buf << v.getName() << " = vec_splats(const_cast<double>(*(const_cast<double *>(" << a->serialize() << "))));" 
+        buf << v.getName() << " = vec_splats((double)(*(const_cast<double *>(" << a->serialize() << "))));" 
             << endl;
     }
     else {
-      buf << v.getName() << " = vec_splats(const_cast<double>(*(const_cast<float *>(" << a->serialize() << "))));" 
+      buf << v.getName() << " = vec_splats((double)(*(const_cast<float *>(" << a->serialize() << "))));" 
             << endl;
 
     }
@@ -477,13 +477,13 @@ public:
         if(!a->isHalfType()) {
             
             buf << v.getName() << " = vec_perm(" << v.getName() 
-                << ", vec_splats( const_cast<double>(*(const_cast<double *>(" << a->serialize() << "))))" 
+                << ", vec_splats( (double)(*(const_cast<double *>(" << a->serialize() << "))))" 
                 << ", _v4d_int2mask(" << (1 << pos) << ")"
                 << ");" << endl;
         }
         else {
             buf << v.getName() << " = vec_perm(" << v.getName() 
-                << ", vec_splats( const_cast<double>(*(const_cast<float *>(" << a->serialize() << "))))" 
+                << ", vec_splats( (double)(*(const_cast<float *>(" << a->serialize() << "))))" 
                 << ", _v4d_int2mask(" << (1 << pos) << ")"
                 << ");" << endl;
         }
