@@ -1,4 +1,4 @@
-mode=mic
+mode=qpx
 
 mode:=$(strip $(mode))
 ARCH=$(mode)
