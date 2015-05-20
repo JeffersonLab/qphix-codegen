@@ -188,6 +188,7 @@ scalar:
 
 qpx:
 	mkdir -p ./qpx
+	@make clean && make mode=qpx PRECISION=2 ENABLE_LOW_PRECISION=1 && ./codegen
 	@make clean && make mode=qpx PRECISION=2 && ./codegen
 
 clean: 

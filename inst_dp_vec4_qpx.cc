@@ -67,12 +67,9 @@ string LoadFVec::serialize() const
                 << endl;
         }
         else {
-            buf << "#error \"halftype is not supported in BG/Q QPX "
-                   "backend\"" 
+	    buf << v.getName() << " = vec_ld(0, const_cast<float *>(" 
+                << a->serialize() << "));" 
                 << endl;
-            printf("Error: halftype is not supported in BG/Q QPX "
-                   "backend\n");
-            exit(1);
         }
     }
     else {
@@ -93,12 +90,21 @@ string LoadFVec::serialize() const
                 << "," << mask << ");" << endl;
         }
         else {
-            buf << "#error \"halftype is not supported in BG/Q QPX "
-                   "backend\"" 
+
+            /* Define a zero vector. */
+            buf << v.getType() << " zeroVec = vec_splats(0.0);" << endl; 
+            
+            /* Load the vector from memory. */
+            buf << v.getName() << " = vec_ld(0,const_cast<float *>(" 
+                << a->serialize() << "));" 
                 << endl;
-            printf("Error: halftype is not supported in BG/Q QPX "
-                   "backend\n");
-            exit(1);
+                
+            /* Blend with the zero vector. Retain the elements that have the 
+             * corresponding high bit set in the mask. 
+             */
+            buf << v.getName() << " = vec_perm( zeroVec, " << v.getName() 
+                << "," << mask << ");" << endl;
+
         }
     }
 
@@ -112,16 +118,13 @@ string StoreFVec::serialize() const
     //int streaming = isStreaming;
     //TODO : Does QPX have an equivalent of AVX _mm256_stream_pd?
     if(!a->isHalfType()) {
-      buf << "vec_sta("  << v.getName() << ", 0, " << a->serialize() << ");" 
+      buf << "vec_sta("  << v.getName() << ", 0, const_cast<double *>(" << a->serialize() << "));" 
           << endl;
     }
     else {
-        buf << "#error \"halftype is not supported in BG/Q QPX "
-               "backend\"" 
-            << endl;
-        printf("Error: halftype is not supported in BG/Q QPX "
-               "backend\n");
-        exit(1);
+      buf << "vec_sta("  << v.getName() << ", 0, const_cast<float *>(" << a->serialize() << "));" 
+          << endl;
+
     }
     return buf.str();
 }
@@ -131,16 +134,13 @@ string LoadBroadcast::serialize() const
     std::ostringstream buf;
 
     if(!a->isHalfType()) {
-        buf << v.getName() << " = vec_splats(*" << a->serialize() << ");" 
+        buf << v.getName() << " = vec_splats(const_cast<double>(*(const_cast<double *>(" << a->serialize() << "))));" 
             << endl;
     }
     else {
-        buf << "#error \"halftype is not supported in BG/Q QPX "
-               "backend\"" 
+      buf << v.getName() << " = vec_splats(const_cast<double>(*(const_cast<float *>(" << a->serialize() << "))));" 
             << endl;
-        printf("Error: halftype is not supported in BG/Q QPX "
-               "backend\n");
-        exit(1);
+
     }
 
     return buf.str();
@@ -389,12 +389,50 @@ public:
             }
         }
         else {
-            buf << "#error \"halftype is not supported in "
-                   "the QPX backend\"" 
-                << endl;
-            printf("FIXME: halftype is not supported in " 
-                   "the QPX backend\n");
-            exit(1);
+            if(forward) {
+                if(soalen == 4) {
+		  buf   << "pctl1 = vec_lvsl(0, const_cast<float *> (" << a1->serialize() << "));\n"
+                        << "pctl2 = vec_lvsl(0, const_cast<float *> (" << a2->serialize() << "));\n"
+
+                        << "v1    =  vec_ld(0, const_cast<float *> (" << a1->serialize() << "));\n"
+	                << "v2    =  vec_ld(0, const_cast<float *> (" << a2->serialize() << "));\n"
+	
+                        << v.getName() << " = vec_perm(vec_perm(v1, v2, pctl1)"
+                                                    ", vec_perm(v2, v1, pctl2)"
+                                                    ", vec_gpci(00124));"
+		        << endl;
+                }
+                else {
+                     buf << "#error\"soalen 2 is not supported in "
+                            "the QPX backend\"" <<endl;
+                     printf("FIXME: soalen 2 is not supported in "
+                            "the QPX backend\n");
+                     exit(1);
+                }
+            }
+            else {
+                if(soalen == 4) {
+                  buf   << "pctl1 = vec_lvsl(0, const_cast<float *> (" << a1->serialize() << "));\n"
+                        << "pctl2 = vec_lvsl(0, const_cast<float *> (" << a2->serialize() << "));\n"
+
+                        << "v1    =  vec_ld(0, const_cast<float *> (" << a1->serialize() << "));\n"
+	                << "v2    =  vec_ld(0, const_cast<float *> (" << a2->serialize() << "));\n"
+	
+                        << v.getName() << " = vec_perm(vec_perm(v1, v2, pctl1)"
+                                                    ", vec_perm(v2, v1, pctl2)"
+                                                    ", vec_gpci(00456));"
+                        << endl;
+                }
+                //FIXME
+                else {
+                    buf << "#error\"soalen 2 is not supported in " 
+                           "the QPX backend\"" 
+                        << endl;
+                    printf("FIXME: soalen 2 is not supported in " 
+                           "the QPX backend\n");
+                    exit(1);
+                }
+            }
         }
         return buf.str();
     }
@@ -439,17 +477,15 @@ public:
         if(!a->isHalfType()) {
             
             buf << v.getName() << " = vec_perm(" << v.getName() 
-                << ", vec_splats(*" << a->serialize() << ")" 
+                << ", vec_splats( const_cast<double>(*(const_cast<double *>(" << a->serialize() << "))))" 
                 << ", _v4d_int2mask(" << (1 << pos) << ")"
                 << ");" << endl;
         }
         else {
-            buf << "#error \"halftype is not supported in BG/Q QPX "
-                   "backend\"" 
-                << endl;
-            printf("Error: halftype is not supported in BG/Q QPX "
-                   "backend\n");
-            exit(1);
+            buf << v.getName() << " = vec_perm(" << v.getName() 
+                << ", vec_splats( const_cast<double>(*(const_cast<float *>(" << a->serialize() << "))))" 
+                << ", _v4d_int2mask(" << (1 << pos) << ")"
+                << ");" << endl;
         }
 
         return buf.str();
@@ -496,8 +532,8 @@ public:
                         << "vec_extract(" << v.getName() << "," << p  << ")"
                         << ", 0)"
                     << ", 0"
-                    << ", " << a->serialize()
-                    << ");"
+                    << ", const_cast<double *>(" << a->serialize()
+                    << "));"
                     << endl;
             }
             else {
@@ -507,19 +543,36 @@ public:
                         << "vec_extract(" << v.getName() << "," << p  << ")"
                         << ", 0)"
                     << ", 0"
-                    << ", " << a->serialize()
-                    << ");"
+                    << ", const_cast<double *>(" << a->serialize()
+                    << "));"
                     << endl;
             }
              
         }
         else {
-            buf << "#error \"halftype is not supported in BG/Q QPX "
-                   "backend\"" 
-                << endl;
-            printf("Error: halftype is not supported in BG/Q QPX "
-                   "backend\n");
-            exit(1);
+            if(pos % 2 == 0) {
+                int p =  ((pos/2)&1)?2:0;
+                buf << "vec_sts(" 
+                    << "vec_promote(" 
+                        << "vec_extract(" << v.getName() << "," << p  << ")"
+                        << ", 0)"
+                    << ", 0"
+                    << ", const_cast<float *>(" << a->serialize()
+                    << "));"
+                    << endl;
+            }
+            else {
+                int p =  ((pos/2)&1)?3:1;
+                buf << "vec_sts(" 
+                    << "vec_promote(" 
+                        << "vec_extract(" << v.getName() << "," << p  << ")"
+                        << ", 0)"
+                    << ", 0"
+                    << ", const_cast<float *>(" << a->serialize()
+                    << "));"
+                    << endl;
+            }
+
         }
 
         return buf.str();
