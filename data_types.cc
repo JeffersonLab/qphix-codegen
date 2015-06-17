@@ -497,7 +497,7 @@ void readFVecClovOffDiag(InstVector& ivector, const FVec& ret, const string& bas
 }
 
 
-void LoadSpinorElement(InstVector& ivector, const FVec& ret, string& base, string& offsets, int spin, int col, int reim, bool isFace, string mask, int dir)
+void LoadSpinorElement(InstVector& ivector, const FVec& ret, const string& base, const string& offsets, int spin, int col, int reim, bool isFace, string mask, int dir)
 {
     void (*readFunc)(InstVector& ivector, const FVec& ret, const string& base, const string& offset, int spin, int color, int reim, const string& mask);
 
