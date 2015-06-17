@@ -106,16 +106,20 @@ public:
     }
 };
 
-class ElseIfStatement : public Instruction { 
+class ElseIfStatement : public Instruction {
 public:
-	ElseIfStatement(const string& condition_) : condition(condition_) {}
-	string serialize() const {
-		return "} else if ( "+condition+" ) { ";
-	}
-	int numIfs() const { return 1; }
-	int numScopes() const { return 1; }
+    ElseIfStatement(const string& condition_) : condition(condition_) {}
+    string serialize() const {
+        return "} else if ( "+condition+" ) { ";
+    }
+    int numIfs() const {
+        return 1;
+    }
+    int numScopes() const {
+        return 1;
+    }
 private:
-	const string condition;
+    const string condition;
 };
 
 class IfStringCond : public Instruction
@@ -458,12 +462,14 @@ private:
 
 class Set1Const : public Instruction {
 public:
-	Set1Const( const FVec& ret_, const double val_) : ret(ret_), val(val_) {}
-	string serialize() const;
-	int numArithmeticInst() const { return 1;}
+    Set1Const( const FVec& ret_, const double val_) : ret(ret_), val(val_) {}
+    string serialize() const;
+    int numArithmeticInst() const {
+        return 1;
+    }
 private:
-	const FVec ret;
-	const double val;
+    const FVec ret;
+    const double val;
 };
 
 class Mul : public Instruction
@@ -574,9 +580,9 @@ void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, i
 void packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask=0xFFFF);
 inline void packFVec(InstVector& ivector, const FVec& ret, Address *a, int mask, int possibleMask)
 {
-	stringstream msk_str;
-	msk_str << "0x" << hex << mask;
-	packFVec(ivector, ret, a, msk_str.str(), possibleMask);
+    stringstream msk_str;
+    msk_str << "0x" << hex << mask;
+    packFVec(ivector, ret, a, msk_str.str(), possibleMask);
 }
 
 
@@ -613,9 +619,9 @@ inline void elseStatement(InstVector& ivector)
     ivector.push_back( new ElseStatement());
 }
 
-inline void elseIfStatement(InstVector& ivector, string condition) 
+inline void elseIfStatement(InstVector& ivector, string condition)
 {
-	ivector.push_back( new ElseIfStatement(condition));
+    ivector.push_back( new ElseIfStatement(condition));
 }
 
 inline void ifAllOneStatement(InstVector& ivector, string condition)
@@ -652,7 +658,7 @@ inline void setZero(InstVector& ivector, const FVec& ret)
 
 inline void set1Const(InstVector& ivector, const FVec& ret, const double val)
 {
-	ivector.push_back(new Set1Const(ret, val));
+    ivector.push_back(new Set1Const(ret, val));
 }
 
 inline void mulFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, string mask = "")
@@ -716,9 +722,9 @@ inline void intToMask(InstVector& ivector, const string maskname, const string i
 }
 
 inline void intToMask(InstVector& ivector, const string maskname, const int msk) {
-	stringstream msk_str;
-	msk_str << "0x" << hex << msk;
-	ivector.push_back(new IntToMask(maskname, msk_str.str()));
+    stringstream msk_str;
+    msk_str << "0x" << hex << msk;
+    ivector.push_back(new IntToMask(maskname, msk_str.str()));
 }
 
 #endif

@@ -10,8 +10,8 @@ using namespace std;
 #include "dslash_common.h"
 
 typedef struct {
-	const char *name;
-	void (*CVecFuncTop2)(InstVector& ivector, FVec *r, FVec *s1, FVec *s2, FVec &beta_vec, string &mask);
+    const char *name;
+    void (*CVecFuncTop2)(InstVector& ivector, FVec *r, FVec *s1, FVec *s2, FVec &beta_vec, string &mask);
 } recons_ops;
 
 string dirname[2] = {"back", "forw"};
@@ -32,39 +32,39 @@ string outOffs("offs");
 //string gOffs("gOffs");
 
 FVec b_KS[3][2] = {
-	{FVec("b_C0_RE"), FVec("b_C0_IM")}, {FVec("b_C1_RE"), FVec("b_C1_IM")}, {FVec("b_C2_RE"), FVec("b_C2_IM")}
+    {FVec("b_C0_RE"), FVec("b_C0_IM")}, {FVec("b_C1_RE"), FVec("b_C1_IM")}, {FVec("b_C2_RE"), FVec("b_C2_IM")}
 };
 
 FVec ub_KS[3][2] = {
-	{FVec("ub_C0_RE"), FVec("ub_C0_IM")}, {FVec("ub_C1_RE"), FVec("ub_C1_IM")}, { FVec("ub_C2_RE"), FVec("ub_C2_IM") }
+    {FVec("ub_C0_RE"), FVec("ub_C0_IM")}, {FVec("ub_C1_RE"), FVec("ub_C1_IM")}, { FVec("ub_C2_RE"), FVec("ub_C2_IM") }
 };
 
 FVec out_KS[3][2] = {
-	{FVec("out_C0_RE"), FVec("out_C0_IM")}, {FVec("out_C1_RE"), FVec("out_C1_IM")}, { FVec("out_C2_RE"), FVec("out_C2_IM") }
+    {FVec("out_C0_RE"), FVec("out_C0_IM")}, {FVec("out_C1_RE"), FVec("out_C1_IM")}, { FVec("out_C2_RE"), FVec("out_C2_IM") }
 };
 
 FVec u_gauge[3][3][2] = {
-	{ {FVec("u_00_re"), FVec("u_00_im")}, {FVec("u_01_re"), FVec("u_01_im")}, {FVec("u_02_re"), FVec("u_02_im")} },
-	{ {FVec("u_10_re"), FVec("u_10_im")}, {FVec("u_11_re"), FVec("u_11_im")}, {FVec("u_12_re"), FVec("u_12_im")} },
-	{ {FVec("u_20_re"), FVec("u_20_im")}, {FVec("u_21_re"), FVec("u_21_im")}, {FVec("u_22_re"), FVec("u_22_im")} }
+    { {FVec("u_00_re"), FVec("u_00_im")}, {FVec("u_01_re"), FVec("u_01_im")}, {FVec("u_02_re"), FVec("u_02_im")} },
+    { {FVec("u_10_re"), FVec("u_10_im")}, {FVec("u_11_re"), FVec("u_11_im")}, {FVec("u_12_re"), FVec("u_12_im")} },
+    { {FVec("u_20_re"), FVec("u_20_im")}, {FVec("u_21_re"), FVec("u_21_im")}, {FVec("u_22_re"), FVec("u_22_im")} }
 };
 
 FVec u1_gauge[3][3][2] = {
-	{ {FVec("u1_00_re"), FVec("u1_00_im")}, {FVec("u1_01_re"), FVec("u1_01_im")}, {FVec("u1_02_re"), FVec("u1_02_im")} },
-	{ {FVec("u1_10_re"), FVec("u1_10_im")}, {FVec("u1_11_re"), FVec("u1_11_im")}, {FVec("u1_12_re"), FVec("u1_12_im")} },
-	{ {FVec("u1_20_re"), FVec("u1_20_im")}, {FVec("u1_21_re"), FVec("u1_21_im")}, {FVec("u1_22_re"), FVec("u1_22_im")} }
+    { {FVec("u1_00_re"), FVec("u1_00_im")}, {FVec("u1_01_re"), FVec("u1_01_im")}, {FVec("u1_02_re"), FVec("u1_02_im")} },
+    { {FVec("u1_10_re"), FVec("u1_10_im")}, {FVec("u1_11_re"), FVec("u1_11_im")}, {FVec("u1_12_re"), FVec("u1_12_im")} },
+    { {FVec("u1_20_re"), FVec("u1_20_im")}, {FVec("u1_21_re"), FVec("u1_21_im")}, {FVec("u1_22_re"), FVec("u1_22_im")} }
 };
 
 FVec u2_gauge[3][3][2] = {
-	{ {FVec("u2_00_re"), FVec("u2_00_im")}, {FVec("u2_01_re"), FVec("u2_01_im")}, {FVec("u2_02_re"), FVec("u2_02_im")} },
-	{ {FVec("u2_10_re"), FVec("u2_10_im")}, {FVec("u2_11_re"), FVec("u2_11_im")}, {FVec("u2_12_re"), FVec("u2_12_im")} },
-	{ {FVec("u2_20_re"), FVec("u2_20_im")}, {FVec("u2_21_re"), FVec("u2_21_im")}, {FVec("u2_22_re"), FVec("u2_22_im")} }
+    { {FVec("u2_00_re"), FVec("u2_00_im")}, {FVec("u2_01_re"), FVec("u2_01_im")}, {FVec("u2_02_re"), FVec("u2_02_im")} },
+    { {FVec("u2_10_re"), FVec("u2_10_im")}, {FVec("u2_11_re"), FVec("u2_11_im")}, {FVec("u2_12_re"), FVec("u2_12_im")} },
+    { {FVec("u2_20_re"), FVec("u2_20_im")}, {FVec("u2_21_re"), FVec("u2_21_im")}, {FVec("u2_22_re"), FVec("u2_22_im")} }
 };
 
 FVec u3_gauge[3][3][2] = {
-	{ {FVec("u3_00_re"), FVec("u3_00_im")}, {FVec("u3_01_re"), FVec("u3_01_im")}, {FVec("u3_02_re"), FVec("u3_02_im")} },
-	{ {FVec("u3_10_re"), FVec("u3_10_im")}, {FVec("u3_11_re"), FVec("u3_11_im")}, {FVec("u3_12_re"), FVec("u3_12_im")} },
-	{ {FVec("u3_20_re"), FVec("u3_20_im")}, {FVec("u3_21_re"), FVec("u3_21_im")}, {FVec("u3_22_re"), FVec("u3_22_im")} }
+    { {FVec("u3_00_re"), FVec("u3_00_im")}, {FVec("u3_01_re"), FVec("u3_01_im")}, {FVec("u3_02_re"), FVec("u3_02_im")} },
+    { {FVec("u3_10_re"), FVec("u3_10_im")}, {FVec("u3_11_re"), FVec("u3_11_im")}, {FVec("u3_12_re"), FVec("u3_12_im")} },
+    { {FVec("u3_20_re"), FVec("u3_20_im")}, {FVec("u3_21_re"), FVec("u3_21_im")}, {FVec("u3_22_re"), FVec("u3_22_im")} }
 };
 
 FVec zero("zero");
@@ -79,652 +79,677 @@ FVec tmp_2_im("tmp_2_im");
 FVec tmp[4] = {FVec("tmp_1_re"), FVec("tmp_1_im"), FVec("tmp_2_re"), FVec("tmp_2_im")};
 
 void declare_misc(InstVector& ivector) {
-	declareFVecFromFVec(ivector, tmp_1_re);
-	declareFVecFromFVec(ivector, tmp_1_im);
-	declareFVecFromFVec(ivector, tmp_2_re);
-	declareFVecFromFVec(ivector, tmp_2_im);
+    declareFVecFromFVec(ivector, tmp_1_re);
+    declareFVecFromFVec(ivector, tmp_1_im);
+    declareFVecFromFVec(ivector, tmp_2_re);
+    declareFVecFromFVec(ivector, tmp_2_im);
 
-	declareFVecFromFVec(ivector, zero);
-	declareFVecFromFVec(ivector, mOne);
-	setZero(ivector, zero);
-	set1Const(ivector, mOne, -1.0);
+    declareFVecFromFVec(ivector, zero);
+    declareFVecFromFVec(ivector, mOne);
+    setZero(ivector, zero);
+    set1Const(ivector, mOne, -1.0);
 }
 
 // Generate all L2 prefetches
 void generatePlainDslashL2Prefetches(InstVector& ivector, bool compress12)
 {
-	PrefetchL2FullKSDirIn(ivector, "xyBase", "pfyOffs", "siprefdist1");
-	PrefetchL2FullKSDirIn(ivector, "pfBase2", "offs", "siprefdist2");
-	PrefetchL2FullKSDirIn(ivector, "pfBase3", "offs", "siprefdist3");
-	PrefetchL2FullKSDirIn(ivector, "pfBase4", "offs", "siprefdist4");
-	PrefetchL2FullGaugeIn(ivector, "gBase", "gOffs", "gprefdist", compress12);
-	PrefetchL2FullKSOut(ivector, outBase, outOffs, "siprefdist4");
+    PrefetchL2FullKSDirIn(ivector, "xyBase", "pfyOffs", "siprefdist1");
+    PrefetchL2FullKSDirIn(ivector, "pfBase2", "offs", "siprefdist2");
+    PrefetchL2FullKSDirIn(ivector, "pfBase3", "offs", "siprefdist3");
+    PrefetchL2FullKSDirIn(ivector, "pfBase4", "offs", "siprefdist4");
+    PrefetchL2FullGaugeIn(ivector, "gBase", "gOffs", "gprefdist", compress12);
+    PrefetchL2FullKSOut(ivector, outBase, outOffs, "siprefdist4");
 }
 
 // Generate all L2 prefetches
 void generateLongDslashL2Prefetches(InstVector& ivector, bool compress12, bool compress12ll)
 {
-	PrefetchL2FullKSDirIn(ivector, "xyBase", "pfyOffs", "siprefdist1");
-	PrefetchL2FullKSDirIn(ivector, "pfBase2", "offs", "siprefdist2");
-	PrefetchL2FullKSDirIn(ivector, "pfBase3", "offs", "siprefdist3");
-	PrefetchL2FullKSDirIn(ivector, "pfBase4", "offs", "siprefdist4");
-	PrefetchL2FullGaugeIn(ivector, "gBase", "gOffs", "gprefdist", compress12);
-	PrefetchL2FullGaugeIn(ivector, "gllBase", "gllOffs", "gprefdist", compress12);
-	PrefetchL2FullKSOut(ivector, outBase, outOffs, "siprefdist4");
+    PrefetchL2FullKSDirIn(ivector, "xyBase", "pfyOffs", "siprefdist1");
+    PrefetchL2FullKSDirIn(ivector, "pfBase2", "offs", "siprefdist2");
+    PrefetchL2FullKSDirIn(ivector, "pfBase3", "offs", "siprefdist3");
+    PrefetchL2FullKSDirIn(ivector, "pfBase4", "offs", "siprefdist4");
+    PrefetchL2FullGaugeIn(ivector, "gBase", "gOffs", "gprefdist", compress12);
+    PrefetchL2FullGaugeIn(ivector, "gllBase", "gllOffs", "gprefdist", compress12);
+    PrefetchL2FullKSOut(ivector, outBase, outOffs, "siprefdist4");
 }
 
 // Generate L2 prefetches for rephase
 void generateRephaseL2Prefetches(InstVector& ivector, bool compress12)
 {
-	PrefetchL2FullGaugeIn(ivector, "gBase", "gOffs", "gprefdist", compress12, 2 /* Ex */);
+    PrefetchL2FullGaugeIn(ivector, "gBase", "gOffs", "gprefdist", compress12, 2 /* Ex */);
 }
 
 // Generate L2 prefetches for load_longlinks
 void generateLoadLongLinkL2Prefetches(InstVector& ivector, bool compress12)
 {
-	PrefetchL2FullGaugeIn(ivector, "gBase", "gpfyOffs", "gprefdist", compress12);
-	PrefetchL2FullGaugeIn(ivector, "gpfBase1", "gOffs", "giprefdist1", compress12);
-	PrefetchL2FullGaugeIn(ivector, "gpfBase2", "gOffs", "giprefdist2", compress12);
+    PrefetchL2FullGaugeIn(ivector, "gBase", "gpfyOffs", "gprefdist", compress12);
+    PrefetchL2FullGaugeIn(ivector, "gpfBase1", "gOffs", "giprefdist1", compress12);
+    PrefetchL2FullGaugeIn(ivector, "gpfBase2", "gOffs", "giprefdist2", compress12);
 #ifndef ENABLE_STREAMING_STORES
-	PrefetchL2FullGaugeIn(ivector, "gllBase", "gOffs", "gprefdist", compress12);
+    PrefetchL2FullGaugeIn(ivector, "gllBase", "gOffs", "gprefdist", compress12);
 #endif
 }
 
 void generateFacePackL2Prefetches(InstVector& ivector, int dir)
 {
-	//TODO: Add prefetching logic
-	//PrefetchL2HalfSpinorDir(ivector, "outbuf", "hsprefdist", dir, true, 2 /* Ex*/);
-	//PrefetchL2FullSpinorDirIn(ivector, "xyBase", "offs", "si_prefdist");
+    //TODO: Add prefetching logic
+    //PrefetchL2HalfSpinorDir(ivector, "outbuf", "hsprefdist", dir, true, 2 /* Ex*/);
+    //PrefetchL2FullSpinorDirIn(ivector, "xyBase", "offs", "si_prefdist");
 }
 
 void generatePlainDslashFaceUnpackL2Prefetches(InstVector& ivector, int dir, bool compress12)
 {
-	//TODO: Add prefetching logic
-	//PrefetchL2HalfSpinorDir(ivector, "inbuf", "hsprefdist", dir, false, 0 /* None*/);
-	//PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", dir, "gprefdist", compress12);
-	//PrefetchL2FullSpinorDirIn(ivector, outBase, outOffs, "soprefdist");
+    //TODO: Add prefetching logic
+    //PrefetchL2HalfSpinorDir(ivector, "inbuf", "hsprefdist", dir, false, 0 /* None*/);
+    //PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", dir, "gprefdist", compress12);
+    //PrefetchL2FullSpinorDirIn(ivector, outBase, outOffs, "soprefdist");
 }
 
 void generateLongDslashFaceUnpackL2Prefetches(InstVector& ivector, int dir, bool compress12, bool compress12ll)
 {
-	//TODO: Add prefetching logic
-	//PrefetchL2HalfSpinorDir(ivector, "inbuf", "hsprefdist", dir, false, 0 /* None*/);
-	//PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", dir, "gprefdist", compress12);
-	//PrefetchL2FullGaugeDirIn(ivector, "gllBase", "gOffs", dir, "gprefdist", compress12);
-	//PrefetchL2FullSpinorDirIn(ivector, outBase, outOffs, "soprefdist");
+    //TODO: Add prefetching logic
+    //PrefetchL2HalfSpinorDir(ivector, "inbuf", "hsprefdist", dir, false, 0 /* None*/);
+    //PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", dir, "gprefdist", compress12);
+    //PrefetchL2FullGaugeDirIn(ivector, "gllBase", "gOffs", dir, "gprefdist", compress12);
+    //PrefetchL2FullSpinorDirIn(ivector, outBase, outOffs, "soprefdist");
 }
 
 // Generate face L2 prefetches for load_longlinks
 void generateLoadLongLinkFacePackL2Prefetches(InstVector& ivector, bool compress12, int dim)
 {
-  	PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", 2*dim, "gprefdist", compress12);
-  	PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", 2*dim+1, "gprefdist", compress12);
-	//TODO: Add prefetching logic
+    PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", 2*dim, "gprefdist", compress12);
+    PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", 2*dim+1, "gprefdist", compress12);
+    //TODO: Add prefetching logic
 }
 
 void generateLoadLongLinkFaceUnpackL2Prefetches(InstVector& ivector, bool compress12, int dim)
 {
-	//TODO: Add prefetching logic
+    //TODO: Add prefetching logic
 }
 
 
 
 void project(InstVector& ivector, string base, string offset, bool isFace, string mask, int dir, bool isThird)
 {
-	PrefetchL1FullKSDirIn(ivector, base, offset, dir);
-	for(int c = 0; c < 3; c++) {
-		LoadKSElement(ivector, b_KS[c][RE], base, offset, c, RE, isFace,  mask, dir, isThird);
-		LoadKSElement(ivector, b_KS[c][IM], base, offset, c, IM, isFace,  mask, dir, isThird);
-	}
+    PrefetchL1FullKSDirIn(ivector, base, offset, dir);
+    for(int c = 0; c < 3; c++) {
+        LoadKSElement(ivector, b_KS[c][RE], base, offset, c, RE, isFace,  mask, dir, isThird);
+        LoadKSElement(ivector, b_KS[c][IM], base, offset, c, IM, isFace,  mask, dir, isThird);
+    }
 }
 
 void recons_add(InstVector& ivector, int dir, FVec out_KS[3][2], string &mask)
 {
-	for(int c = 0; c < 3; c++) {
-		if(dir == 0)
-			subCVec(ivector, out_KS[c], out_KS[c], ub_KS[c], mask);
-		else
-			addCVec(ivector, out_KS[c], out_KS[c], ub_KS[c], mask);
-	}
+    for(int c = 0; c < 3; c++) {
+        if(dir == 0)
+            subCVec(ivector, out_KS[c], out_KS[c], ub_KS[c], mask);
+        else
+            addCVec(ivector, out_KS[c], out_KS[c], ub_KS[c], mask);
+    }
 }
 
 void zeroResult(InstVector& ivector, FVec *out_KS)
 {
-	for(int i=0; i < 6; i++) {
-		setZero(ivector, out_KS[i]);
-	}
+    for(int i=0; i < 6; i++) {
+        setZero(ivector, out_KS[i]);
+    }
 }
 
 void invertGaugeSign(InstVector& ivector, FVec u_mat[3][3][2], int startRow, bool compress12, string mask)
 {
-	int endRow = (compress12 ? 2 : 3);
-	if(startRow == 2) endRow = 3;
-	for(int r = startRow; r < endRow; r++) {
-		for(int c = 0; c < 3; c++) {
-			mulFVec(ivector, u_mat[r][c][RE], u_gauge[r][c][RE], mOne, mask);
-			mulFVec(ivector, u_mat[r][c][IM], u_gauge[r][c][IM], mOne, mask);
-		}
-	}
+    int endRow = (compress12 ? 2 : 3);
+    if(startRow == 2) endRow = 3;
+    for(int r = startRow; r < endRow; r++) {
+        for(int c = 0; c < 3; c++) {
+            mulFVec(ivector, u_mat[r][c][RE], u_gauge[r][c][RE], mOne, mask);
+            mulFVec(ivector, u_mat[r][c][IM], u_gauge[r][c][IM], mOne, mask);
+        }
+    }
 }
 
 void reconstructGaugeSign(InstVector& ivector, FVec u_mat[3][3][2], int dim, int startRow, bool compress12)
 {
-	int soaMsk = 0, elseSoaMsk = 0;
-	string mask("signMask");
-	switch(dim) {
-		case 0:
-			ifStatement(ivector, "t & 1" );
-			invertGaugeSign(ivector, u_mat, startRow, compress12, "");
-			endScope(ivector);
-			break;
-		case 1:
+    int soaMsk = 0, elseSoaMsk = 0;
+    string mask("signMask");
+    switch(dim) {
+    case 0:
+        ifStatement(ivector, "t & 1" );
+        invertGaugeSign(ivector, u_mat, startRow, compress12, "");
+        endScope(ivector);
+        break;
+    case 1:
 #if SOALEN==VECLEN
-			ifStatement(ivector, "(t + x) & 1" );
-			invertGaugeSign(ivector, u_mat, startRow, compress12, "");
-			endScope(ivector);
-			break;
+        ifStatement(ivector, "(t + x) & 1" );
+        invertGaugeSign(ivector, u_mat, startRow, compress12, "");
+        endScope(ivector);
+        break;
 #else
-			soaMsk = 0;
-			for(int i = 0; i < (VECLEN/SOALEN)/2; i++) soaMsk = (soaMsk << (2*SOALEN)) + (1 << SOALEN) - 1;
-			elseSoaMsk = soaMsk << SOALEN;
+        soaMsk = 0;
+        for(int i = 0; i < (VECLEN/SOALEN)/2; i++) soaMsk = (soaMsk << (2*SOALEN)) + (1 << SOALEN) - 1;
+        elseSoaMsk = soaMsk << SOALEN;
 
-			beginScope(ivector);
-			declareMask(ivector, mask);
-			ifStatement(ivector, "(t + x) & 1" );
-			intToMask(ivector, mask, soaMsk);
-			elseStatement(ivector);
-			intToMask(ivector, mask, elseSoaMsk);
-			endScope(ivector);
-			invertGaugeSign(ivector, u_mat, startRow, compress12, mask);
-			endScope(ivector);
-			break;
+        beginScope(ivector);
+        declareMask(ivector, mask);
+        ifStatement(ivector, "(t + x) & 1" );
+        intToMask(ivector, mask, soaMsk);
+        elseStatement(ivector);
+        intToMask(ivector, mask, elseSoaMsk);
+        endScope(ivector);
+        invertGaugeSign(ivector, u_mat, startRow, compress12, mask);
+        endScope(ivector);
+        break;
 #endif
-		case 2:
-			ifStatement(ivector, "(t + x + y) & 1" );
-			invertGaugeSign(ivector, u_mat, startRow, compress12, "");
-			endScope(ivector);
-			break;
-		case 3:
-			break;
-	}
+    case 2:
+        ifStatement(ivector, "(t + x + y) & 1" );
+        invertGaugeSign(ivector, u_mat, startRow, compress12, "");
+        endScope(ivector);
+        break;
+    case 3:
+        break;
+    }
 }
 
 void loadGaugeDir(InstVector& ivector, string gBase, string gOffs, int dir, bool compress12) {
-	string mask;
+    string mask;
 
-	PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, dir, compress12);
-	LoadFullGaugeDir(ivector, u_gauge, gBase, gOffs, dir, compress12);
+    PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, dir, compress12);
+    LoadFullGaugeDir(ivector, u_gauge, gBase, gOffs, dir, compress12);
 
-	decompressGauge(ivector, u_gauge, compress12, mask);
+    decompressGauge(ivector, u_gauge, compress12, mask);
 
-	if(compress12) reconstructGaugeSign(ivector, u_gauge, dir/2, 2, compress12);
+    if(compress12) reconstructGaugeSign(ivector, u_gauge, dir/2, 2, compress12);
 }
 
 void matMultVec(InstVector& ivector, bool adjMul)
 {
-	string mask;
-	matMultVec(ivector, ub_KS, u_gauge, b_KS, adjMul, mask);
+    string mask;
+    matMultVec(ivector, ub_KS, u_gauge, b_KS, adjMul, mask);
 }
 
 void dslash_body(InstVector& ivector, string bnames[8], string offs[8], string gBase, string gOffs, bool compress12, bool isLong, FVec out_KS[3][2])
 {
-	for(int dim = 0; dim < 4; dim++) {
-		for(int dir = 0; dir < 2; dir++) {
-			int d = dim * 2 + dir;
-			stringstream d_str;
-			d_str << d;
-			string mask;
-			bool adjMul;
+    for(int dim = 0; dim < 4; dim++) {
+        for(int dir = 0; dir < 2; dir++) {
+            int d = dim * 2 + dir;
+            stringstream d_str;
+            d_str << d;
+            string mask;
+            bool adjMul;
 
-			adjMul = (dir == 0 ? true : false);
+            adjMul = (dir == 0 ? true : false);
 
-			string accumulate = (isLong ? "accumulate3" : "accumulate");
-			
-			ifStatement(ivector, accumulate + "[" + d_str.str() + "]");
-			{
+            string accumulate = (isLong ? "accumulate3" : "accumulate");
+
+            ifStatement(ivector, accumulate + "[" + d_str.str() + "]");
+            {
 #ifdef NO_HW_MASKING
-				if(requireAllOneCheck[dim]) {
-					ifAllOneStatement(ivector, accumulate + "[" + d_str.str() + "]");
-					{
-						project(ivector, bnames[d], offs[d], false, mask, d, isLong);
-						loadGaugeDir(ivector, gBase, gOffs, d, compress12);
-						matMultVec(ivector, adjMul);
-						recons_add(ivector, dir, out_KS, mask);
-					}
-					elseStatement(ivector);
-				}
+                if(requireAllOneCheck[dim]) {
+                    ifAllOneStatement(ivector, accumulate + "[" + d_str.str() + "]");
+                    {
+                        project(ivector, bnames[d], offs[d], false, mask, d, isLong);
+                        loadGaugeDir(ivector, gBase, gOffs, d, compress12);
+                        matMultVec(ivector, adjMul);
+                        recons_add(ivector, dir, out_KS, mask);
+                    }
+                    elseStatement(ivector);
+                }
 #endif
-				if(requireAllOneCheck[dim]) {
-					mask = "accMask";
-					declareMask(ivector, mask);
-					intToMask(ivector, mask, accumulate + "[" + d_str.str() + "]");
-				}
-				project(ivector, bnames[d], offs[d], false, mask, d, isLong);
-				loadGaugeDir(ivector, gBase, gOffs, d, compress12);
-				matMultVec(ivector, adjMul);
-				recons_add(ivector, dir, out_KS, mask);
+                if(requireAllOneCheck[dim]) {
+                    mask = "accMask";
+                    declareMask(ivector, mask);
+                    intToMask(ivector, mask, accumulate + "[" + d_str.str() + "]");
+                }
+                project(ivector, bnames[d], offs[d], false, mask, d, isLong);
+                loadGaugeDir(ivector, gBase, gOffs, d, compress12);
+                matMultVec(ivector, adjMul);
+                recons_add(ivector, dir, out_KS, mask);
 #ifdef NO_HW_MASKING
-				if(requireAllOneCheck[dim]) {
-					endScope(ivector);
-				}
+                if(requireAllOneCheck[dim]) {
+                    endScope(ivector);
+                }
 #endif
-			}
-			endScope(ivector);
-		}
-	}
+            }
+            endScope(ivector);
+        }
+    }
 }
 
 // (A*B+)*C2  n_miu -->
 void path_product(InstVector& ivector, string gBase, string gOffs, string nBase, string nOffs, string gllBase, string gllnBase, int dim, bool compress12, bool isFace=false )
 {
-	string in("inbuf");
-	string out("outbuf");
+    string in("inbuf");
+    string out("outbuf");
 
-	FVec (*A)[3][2] = u1_gauge;
+    FVec (*A)[3][2] = u1_gauge;
 
-	int dir = 2*dim+1; // forward in dim
+    int dir = 2*dim+1; // forward in dim
 
- 	PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, dir, compress12);
-	LoadFullGaugeDir(ivector, A, gBase, gOffs, dir, compress12);
+    PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, dir, compress12);
+    LoadFullGaugeDir(ivector, A, gBase, gOffs, dir, compress12);
 
-	//Prefetch in backward dim
- 	PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, 2*dim, compress12);
+    //Prefetch in backward dim
+    PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, 2*dim, compress12);
 
-	// Load gauge field B & C
-	if(!isFace){
-		PrefetchL1FullGaugeDirIn(ivector, nBase, nOffs, 2*dim+0, compress12);  // backward link
-		PrefetchL1FullGaugeDirIn(ivector, nBase, nOffs, 2*dim+1, compress12);  // forward link
-	}
+    // Load gauge field B & C
+    if(!isFace) {
+        PrefetchL1FullGaugeDirIn(ivector, nBase, nOffs, 2*dim+0, compress12);  // backward link
+        PrefetchL1FullGaugeDirIn(ivector, nBase, nOffs, 2*dim+1, compress12);  // forward link
+    }
 
-	decompressGauge(ivector, A, compress12, "");
-	if(compress12) reconstructGaugeSign(ivector, A, dir/2, 2, compress12);
+    decompressGauge(ivector, A, compress12, "");
+    if(compress12) reconstructGaugeSign(ivector, A, dir/2, 2, compress12);
 
-	FVec (*B)[3][2] = u2_gauge;
-	FVec (*C)[3][2] = u3_gauge;
-	FVec (*U)[3][2] = u_gauge;   
-	int c1, c2;
+    FVec (*B)[3][2] = u2_gauge;
+    FVec (*C)[3][2] = u3_gauge;
+    FVec (*U)[3][2] = u_gauge;
+    int c1, c2;
 
-	// Gather gauge field B
-	if(!isFace)
-		LoadFullNeighborGaugeDirLink(ivector, B, nBase, nOffs, dir, 2*dim, compress12);
-	else
-		LoadOrUnpackFullNeighborGaugeDirLinkBuffer(ivector, B, nBase, nOffs, dir, 2*dim, in, 0, compress12);
+    // Gather gauge field B
+    if(!isFace)
+        LoadFullNeighborGaugeDirLink(ivector, B, nBase, nOffs, dir, 2*dim, compress12);
+    else
+        LoadOrUnpackFullNeighborGaugeDirLinkBuffer(ivector, B, nBase, nOffs, dir, 2*dim, in, 0, compress12);
 
-	decompressGauge(ivector, B, compress12, "");
-	if(compress12) reconstructGaugeSign(ivector, B, dir/2, 2, compress12);
+    decompressGauge(ivector, B, compress12, "");
+    if(compress12) reconstructGaugeSign(ivector, B, dir/2, 2, compress12);
 
-	// U = A*B+
-	matMultMat(ivector, U, A, B, true, "");
+    // U = A*B+
+    matMultMat(ivector, U, A, B, true, "");
 
-	// Gather gauge field C in to A
-	if(!isFace)
-		LoadFullNeighborGaugeDirLink(ivector, A, nBase, nOffs, dir, 2*dim+1, compress12);
-	else 
-		LoadOrUnpackFullNeighborGaugeDirLinkBuffer(ivector, A, nBase, nOffs, dir, 2*dim+1, in, 1, compress12);
+    // Gather gauge field C in to A
+    if(!isFace)
+        LoadFullNeighborGaugeDirLink(ivector, A, nBase, nOffs, dir, 2*dim+1, compress12);
+    else
+        LoadOrUnpackFullNeighborGaugeDirLinkBuffer(ivector, A, nBase, nOffs, dir, 2*dim+1, in, 1, compress12);
 
-	decompressGauge(ivector, A, compress12, "");
-	if(compress12) reconstructGaugeSign(ivector, A, dir/2, 2, compress12);
-	
-	// B = U*A
-	matMultMat(ivector, B, U, A, false, "");
-	// store result vector
-	StreamFullGaugeDir(ivector, B, gllBase, gOffs, dir, compress12);
+    decompressGauge(ivector, A, compress12, "");
+    if(compress12) reconstructGaugeSign(ivector, A, dir/2, 2, compress12);
 
-	// Gather gauge field C (backwards)
-	LoadFullGaugeDir(ivector, A, gBase, gOffs, dir-1, compress12);
+    // B = U*A
+    matMultMat(ivector, B, U, A, false, "");
+    // store result vector
+    StreamFullGaugeDir(ivector, B, gllBase, gOffs, dir, compress12);
 
-	decompressGauge(ivector, A, compress12, "");
-	if(compress12) reconstructGaugeSign(ivector, A, dir/2, 2, compress12);
-	
-	// B = U+*A
-	adjMatMultMat(ivector, B, U, A, "");
+    // Gather gauge field C (backwards)
+    LoadFullGaugeDir(ivector, A, gBase, gOffs, dir-1, compress12);
 
-	// store result vector
-	if(!isFace)
-		StoreFullNeighborGaugeDirLink(ivector, B, gllnBase, nOffs, dir, 2*dim, compress12);
-	else 
-		StoreOrPackFullNeighborGaugeDirLinkBuffer(ivector, B, gllnBase, nOffs, dir, 2*dim, out, 0, compress12);
+    decompressGauge(ivector, A, compress12, "");
+    if(compress12) reconstructGaugeSign(ivector, A, dir/2, 2, compress12);
+
+    // B = U+*A
+    adjMatMultMat(ivector, B, U, A, "");
+
+    // store result vector
+    if(!isFace)
+        StoreFullNeighborGaugeDirLink(ivector, B, gllnBase, nOffs, dir, 2*dim, compress12);
+    else
+        StoreOrPackFullNeighborGaugeDirLinkBuffer(ivector, B, gllnBase, nOffs, dir, 2*dim, out, 0, compress12);
 }
 
 // need xyBase, and offs to specify input spinor
 // need outbuf for output half spinor
 void pack_face_vec(InstVector& ivector, int dir)
 {
-	string intMask;
+    string intMask;
 
-	// expect width in number of mask bits set in the mask
-	string width("width");
+    // expect width in number of mask bits set in the mask
+    string width("width");
 
-	// Check if this dir has mask argument
-	if(requireAllOneCheck[dir/2]) intMask = "mask";
+    // Check if this dir has mask argument
+    if(requireAllOneCheck[dir/2]) intMask = "mask";
 
-	string out("outbuf");
-	//PrefetchL1KSSpinorDir(ivector, out, dir, true, 2 /*Exclusive*/);
+    string out("outbuf");
+    //PrefetchL1KSSpinorDir(ivector, out, dir, true, 2 /*Exclusive*/);
 
-	project(ivector, "xyBase","offs", true, "", dir, false);  
+    project(ivector, "xyBase","offs", true, "", dir, false);
 
-	// This will write it to outbuf
-	PackKSSpinor(ivector, b_KS, out, dir, intMask, width);
+    // This will write it to outbuf
+    PackKSSpinor(ivector, b_KS, out, dir, intMask, width);
 }
 
 // need inbuf pointer to packed KS spinor
 // need gBase and goffs to point to gauge
 // need obase and offs to point to spinor to accumulate and scatter.
 void plain_dslash_face_unpack_from_dir_dim_vec(InstVector& ivector, bool compress12, int dir, int dim)
-{ 
+{
 
-	string in("inbuf");
-	string mask, intMask("mask"), width("width");
-	string gBase("gBase"), gOffs("gOffs");
+    string in("inbuf");
+    string mask, intMask("mask"), width("width");
+    string gBase("gBase"), gOffs("gOffs");
 
-	int gauge_index = dim * 2 + dir;
-	bool adjMul = (dir == 0);
-	
-	declare_KSSpinor(ivector, b_KS);
-	declare_KSSpinor(ivector, ub_KS);
-	declare_Gauge(ivector, u_gauge);
-	declare_misc(ivector);
+    int gauge_index = dim * 2 + dir;
+    bool adjMul = (dir == 0);
 
-	declare_KSSpinor(ivector, out_KS);
-	// Check if this dir has mask argument
-	if(requireAllOneCheck[dim]) {
-		mask = "accMask";
-		declareMask(ivector, mask);
-		intToMask(ivector, mask, intMask);
-	}
+    declare_KSSpinor(ivector, b_KS);
+    declare_KSSpinor(ivector, ub_KS);
+    declare_Gauge(ivector, u_gauge);
+    declare_misc(ivector);
 
-	//PrefetchL1KSDir(ivector, in, dir, false, 0 /*None*/);
-	// Gather in the partial result
-	PrefetchL1FullKSDirIn(ivector, outBase, outOffs, -1);
-	LoadFullKS(ivector, out_KS, outBase, outOffs, "");
+    declare_KSSpinor(ivector, out_KS);
+    // Check if this dir has mask argument
+    if(requireAllOneCheck[dim]) {
+        mask = "accMask";
+        declareMask(ivector, mask);
+        intToMask(ivector, mask, intMask);
+    }
 
-	// load b-from inbuf 
-	UnpackKSSpinor(ivector, b_KS, in, gauge_index, intMask, width);
+    //PrefetchL1KSDir(ivector, in, dir, false, 0 /*None*/);
+    // Gather in the partial result
+    PrefetchL1FullKSDirIn(ivector, outBase, outOffs, -1);
+    LoadFullKS(ivector, out_KS, outBase, outOffs, "");
 
-	loadGaugeDir(ivector, gBase, gOffs, gauge_index, compress12);
-	matMultVec(ivector, adjMul);
-	recons_add(ivector, dir, out_KS, mask);
+    // load b-from inbuf
+    UnpackKSSpinor(ivector, b_KS, in, gauge_index, intMask, width);
 
-	// scatter it out
-	StoreFullKS(ivector, out_KS, outBase, outOffs);
+    loadGaugeDir(ivector, gBase, gOffs, gauge_index, compress12);
+    matMultVec(ivector, adjMul);
+    recons_add(ivector, dir, out_KS, mask);
+
+    // scatter it out
+    StoreFullKS(ivector, out_KS, outBase, outOffs);
 }
 
 // need inbuf pointer to packed KS spinor
 // need gBase, gllBase and goffs to point to gauge
 // need obase and offs to point to spinor to accumulate and scatter.
 void long_dslash_face_unpack_from_dir_dim_vec(InstVector& ivector, bool compress12, bool compress12ll, int dir, int dim)
-{ 
+{
 
-	string in("inbuf");
-	string in_ll("inbuf_ll");
-	string mask, intMask("mask"), intMask_ll("mask_ll"), width("width");
-	string gBase("gBase"), gllBase("gllBase"), gOffs("gOffs"), gllOffs("gllOffs");
+    string in("inbuf");
+    string in_ll("inbuf_ll");
+    string mask, intMask("mask"), intMask_ll("mask_ll"), width("width");
+    string gBase("gBase"), gllBase("gllBase"), gOffs("gOffs"), gllOffs("gllOffs");
 
-	int gauge_index = dim * 2 + dir;
-	bool adjMul = (dir == 0);
-	
-	declare_KSSpinor(ivector, b_KS);
-	declare_KSSpinor(ivector, ub_KS);
-	declare_Gauge(ivector, u_gauge);
-	declare_misc(ivector);
+    int gauge_index = dim * 2 + dir;
+    bool adjMul = (dir == 0);
 
-	declare_KSSpinor(ivector, out_KS);
-	// Check if this dir has mask argument
-	if(requireAllOneCheck[dim]) {
-		mask = "accMask";
-		declareMask(ivector, mask);
-		intToMask(ivector, mask, intMask);
-	}
+    declare_KSSpinor(ivector, b_KS);
+    declare_KSSpinor(ivector, ub_KS);
+    declare_Gauge(ivector, u_gauge);
+    declare_misc(ivector);
 
-	//PrefetchL1KSDir(ivector, in, dir, false, 0 /*None*/);
-	// Gather in the partial result
-	PrefetchL1FullKSDirIn(ivector, outBase, outOffs, -1);
-	LoadFullKS(ivector, out_KS, outBase, outOffs, "");
+    declare_KSSpinor(ivector, out_KS);
+    // Check if this dir has mask argument
+    if(requireAllOneCheck[dim]) {
+        mask = "accMask";
+        declareMask(ivector, mask);
+        intToMask(ivector, mask, intMask);
+    }
 
-	// load b-from inbuf 
-	UnpackKSSpinor(ivector, b_KS, in, gauge_index, intMask, width);
+    //PrefetchL1KSDir(ivector, in, dir, false, 0 /*None*/);
+    // Gather in the partial result
+    PrefetchL1FullKSDirIn(ivector, outBase, outOffs, -1);
+    LoadFullKS(ivector, out_KS, outBase, outOffs, "");
 
-	loadGaugeDir(ivector, gBase, gOffs, gauge_index, compress12);
-	matMultVec(ivector, adjMul);
-	recons_add(ivector, dir, out_KS, mask);
+    // load b-from inbuf
+    UnpackKSSpinor(ivector, b_KS, in, gauge_index, intMask, width);
 
-	if(requireAllOneCheck[dim]) {
-		mask = "accMask_ll";
-		declareMask(ivector, mask);
-		intToMask(ivector, mask, intMask_ll);
-	}
+    loadGaugeDir(ivector, gBase, gOffs, gauge_index, compress12);
+    matMultVec(ivector, adjMul);
+    recons_add(ivector, dir, out_KS, mask);
 
-	// load b-from inbuf 
-	UnpackKSSpinor(ivector, b_KS, in_ll, gauge_index, intMask_ll, width);
+    if(requireAllOneCheck[dim]) {
+        mask = "accMask_ll";
+        declareMask(ivector, mask);
+        intToMask(ivector, mask, intMask_ll);
+    }
 
-	loadGaugeDir(ivector, gllBase, gllOffs, gauge_index, compress12ll);
-	matMultVec(ivector, adjMul);
-	recons_add(ivector, dir, out_KS, mask);
+    // load b-from inbuf
+    UnpackKSSpinor(ivector, b_KS, in_ll, gauge_index, intMask_ll, width);
 
-	// scatter it out
-	StoreFullKS(ivector, out_KS, outBase, outOffs);
+    loadGaugeDir(ivector, gllBase, gllOffs, gauge_index, compress12ll);
+    matMultVec(ivector, adjMul);
+    recons_add(ivector, dir, out_KS, mask);
+
+    // scatter it out
+    StoreFullKS(ivector, out_KS, outBase, outOffs);
 }
 
-void dslash_plain_body(InstVector& ivector, bool compress12) 
+void dslash_plain_body(InstVector& ivector, bool compress12)
 {
-	declare_KSSpinor(ivector, b_KS);
-	declare_KSSpinor(ivector, ub_KS);
-	declare_Gauge(ivector, u_gauge);
-	declare_misc(ivector);
+    declare_KSSpinor(ivector, b_KS);
+    declare_KSSpinor(ivector, ub_KS);
+    declare_Gauge(ivector, u_gauge);
+    declare_misc(ivector);
 
-	declare_KSSpinor(ivector, out_KS);
+    declare_KSSpinor(ivector, out_KS);
 
-	zeroResult(ivector, out_KS[0]);
+    zeroResult(ivector, out_KS[0]);
 
-	dslash_body(ivector, basenames, offsnames, "gBase", "gOffs", compress12, false, out_KS);
+    dslash_body(ivector, basenames, offsnames, "gBase", "gOffs", compress12, false, out_KS);
 
-	// Store
-	StreamFullKS(ivector, out_KS, outBase, outOffs);
+    // Store
+    StreamFullKS(ivector, out_KS, outBase, outOffs);
 }
 
-void dslash_long_body(InstVector& ivector, bool compress12, bool compress12ll) 
+void dslash_long_body(InstVector& ivector, bool compress12, bool compress12ll)
 {
-	declare_KSSpinor(ivector, b_KS);
-	declare_KSSpinor(ivector, ub_KS);
-	declare_Gauge(ivector, u_gauge);
-	declare_misc(ivector);
+    declare_KSSpinor(ivector, b_KS);
+    declare_KSSpinor(ivector, ub_KS);
+    declare_Gauge(ivector, u_gauge);
+    declare_misc(ivector);
 
-	declare_KSSpinor(ivector, out_KS);
+    declare_KSSpinor(ivector, out_KS);
 
-	zeroResult(ivector, out_KS[0]);
+    zeroResult(ivector, out_KS[0]);
 
-	dslash_body(ivector, basenames, offsnames, "gBase", "gOffs", compress12, false, out_KS);
-	dslash_body(ivector, basenames3rd, offsnames3rd, "gllBase", "gllOffs", compress12ll, true, out_KS);
+    dslash_body(ivector, basenames, offsnames, "gBase", "gOffs", compress12, false, out_KS);
+    dslash_body(ivector, basenames3rd, offsnames3rd, "gllBase", "gllOffs", compress12ll, true, out_KS);
 
-	// Store
-	StreamFullKS(ivector, out_KS, outBase, outOffs);
+    // Store
+    StreamFullKS(ivector, out_KS, outBase, outOffs);
 }
 
 void rephase_body( InstVector& ivector, bool compress12 )
 {
-	declare_Gauge(ivector, u_gauge);
-	declare_misc(ivector);
+    declare_Gauge(ivector, u_gauge);
+    declare_misc(ivector);
 
-	string gBase("gBase");
-	string gOffs("gOffs");
+    string gBase("gBase");
+    string gOffs("gOffs");
 
-	// We are updating rephased gauges in place so no need to read/write in T-dim
-	for(int dir = 0; dir < 6; dir++){
-		PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, dir, compress12, 3 /* Type = NT & Ex */);
-		LoadFullGaugeDir(ivector, u_gauge, gBase, gOffs, dir, compress12);
-		reconstructGaugeSign(ivector, u_gauge, dir/2, 0, compress12);
-		StreamFullGaugeDir(ivector, u_gauge, gBase, gOffs, dir, compress12);
-	}
+    // We are updating rephased gauges in place so no need to read/write in T-dim
+    for(int dir = 0; dir < 6; dir++) {
+        PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, dir, compress12, 3 /* Type = NT & Ex */);
+        LoadFullGaugeDir(ivector, u_gauge, gBase, gOffs, dir, compress12);
+        reconstructGaugeSign(ivector, u_gauge, dir/2, 0, compress12);
+        StreamFullGaugeDir(ivector, u_gauge, gBase, gOffs, dir, compress12);
+    }
 }
 
 // Assuming gauge fields contain phase
 void load_longlinks_body(InstVector& ivector, bool compress12)
 {
-	declare_Gauge(ivector, u_gauge);
-	declare_Gauge(ivector, u1_gauge);
-	declare_Gauge(ivector, u2_gauge);
-	declare_Gauge(ivector, u3_gauge);
-	declare_misc(ivector);
+    declare_Gauge(ivector, u_gauge);
+    declare_Gauge(ivector, u1_gauge);
+    declare_Gauge(ivector, u2_gauge);
+    declare_Gauge(ivector, u3_gauge);
+    declare_misc(ivector);
 
-	ifStatement(ivector, "dirmask[0]");
+    ifStatement(ivector, "dirmask[0]");
     path_product(ivector, "gBase", "gOffs", "gBase", "gxfOffs", "gllBase", "gllBase", 0, compress12);
-	endScope(ivector);
-	ifStatement(ivector, "dirmask[1]");
+    endScope(ivector);
+    ifStatement(ivector, "dirmask[1]");
     path_product(ivector, "gBase", "gOffs", "gBase", "gyfOffs", "gllBase", "gllBase", 1, compress12);
-	endScope(ivector);
-	ifStatement(ivector, "dirmask[2]");
+    endScope(ivector);
+    ifStatement(ivector, "dirmask[2]");
     path_product(ivector, "gBase", "gOffs", "gzfBase", "gOffs", "gllBase", "gllzfBase", 2, compress12);
-	endScope(ivector);
-	ifStatement(ivector, "dirmask[3]");
+    endScope(ivector);
+    ifStatement(ivector, "dirmask[3]");
     path_product(ivector, "gBase", "gOffs", "gtfBase", "gOffs", "gllBase", "glltfBase", 3, compress12);
-	endScope(ivector);
+    endScope(ivector);
 }
 
 
-void face_pack_to_dir_dim_vec(InstVector& ivector, int dir, int dim) 
+void face_pack_to_dir_dim_vec(InstVector& ivector, int dir, int dim)
 {
-	declare_KSSpinor(ivector, b_KS);
-	declare_misc(ivector);
+    declare_KSSpinor(ivector, b_KS);
+    declare_misc(ivector);
 
-	pack_face_vec(ivector, 2*dim+dir);
+    pack_face_vec(ivector, 2*dim+dir);
 }
 
-void load_longlinks_face_pack_to_dim(InstVector& ivector, bool compress12, int dim) 
+void load_longlinks_face_pack_to_dim(InstVector& ivector, bool compress12, int dim)
 {
-	declare_Gauge(ivector, u_gauge);
-	declare_misc(ivector);
+    declare_Gauge(ivector, u_gauge);
+    declare_misc(ivector);
 
-	LoadFullGaugeDir(ivector, u_gauge, "gBase", "gOffs", 2*dim, compress12);
-	PackGaugeDir(ivector, u_gauge, 2*dim+1, "outbuf", 0, compress12);
-	LoadFullGaugeDir(ivector, u_gauge, "gBase", "gOffs", 2*dim+1, compress12);
-	PackGaugeDir(ivector, u_gauge, 2*dim+1, "outbuf", 1, compress12);
+    LoadFullGaugeDir(ivector, u_gauge, "gBase", "gOffs", 2*dim, compress12);
+    PackGaugeDir(ivector, u_gauge, 2*dim+1, "outbuf", 0, compress12);
+    LoadFullGaugeDir(ivector, u_gauge, "gBase", "gOffs", 2*dim+1, compress12);
+    PackGaugeDir(ivector, u_gauge, 2*dim+1, "outbuf", 1, compress12);
 }
 
 void load_longlinks_face_unpack_from_dim(InstVector& ivector, bool compress12, int dim)
 {
-	declare_Gauge(ivector, u_gauge);
-	declare_Gauge(ivector, u1_gauge);
-	declare_Gauge(ivector, u2_gauge);
-	declare_Gauge(ivector, u3_gauge);
-	declare_misc(ivector);
+    declare_Gauge(ivector, u_gauge);
+    declare_Gauge(ivector, u1_gauge);
+    declare_Gauge(ivector, u2_gauge);
+    declare_Gauge(ivector, u3_gauge);
+    declare_misc(ivector);
 
     path_product(ivector, "gBase", "gOffs", "gBase", "gfOffs", "gllBase", "gllBase", dim, compress12, true);
 }
 
 string getTypeName(size_t s)
 {
-	if(s == 2) return "half";
-	else if(s == 4) return "float";
-	else if(s == 8) return "double";
-	else return "Unknown";
+    if(s == 2) return "half";
+    else if(s == 4) return "float";
+    else if(s == 8) return "double";
+    else return "Unknown";
 }
 
 int main(void)
 {
-	InstVector ivector;
-	InstVector l2prefs;
-	bool compress12;
+    InstVector ivector;
+    InstVector l2prefs;
+    bool compress12;
 
-	const string SpinorTypeName = getTypeName(sizeof(SpinorBaseType));
-	const string GaugeTypeName = getTypeName(sizeof(GaugeBaseType));
+    const string SpinorTypeName = getTypeName(sizeof(SpinorBaseType));
+    const string GaugeTypeName = getTypeName(sizeof(GaugeBaseType));
 
-	if(SOALEN == VECLEN) requireAllOneCheck[1] = false;
+    if(SOALEN == VECLEN) requireAllOneCheck[1] = false;
 
 #ifdef NO_MASKS
-	for(int i = 0; i < 4; i++) requireAllOneCheck[i] = false;
+    for(int i = 0; i < 4; i++) requireAllOneCheck[i] = false;
 #endif
 
-	for(int num_components=12; num_components <=18; num_components+=6) { 
-		compress12 = ( num_components==12 );
+    for(int num_components=12; num_components <=18; num_components+=6) {
+        compress12 = ( num_components==12 );
 
-		std::ostringstream filename;
-		// Dslash
-		filename << "./"<<ARCH_NAME<<"/" << "ks_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
-		cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-		generatePlainDslashL2Prefetches(l2prefs,compress12);
-		dslash_plain_body(ivector,compress12);
-		mergeIvectorWithL2Prefetches(ivector, l2prefs);
-		dumpIVector(ivector,filename.str());
+        std::ostringstream filename;
+        // Dslash
+        filename << "./"<<ARCH_NAME<<"/" << "ks_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        cout << "GENERATING " << filename.str() << endl;
+        l2prefs.resize(0);
+        ivector.resize(0);
+        generatePlainDslashL2Prefetches(l2prefs,compress12);
+        dslash_plain_body(ivector,compress12);
+        mergeIvectorWithL2Prefetches(ivector, l2prefs);
+        dumpIVector(ivector,filename.str());
 
-		filename.str("");filename.clear();
-		// Long Dslash
-		filename << "./"<<ARCH_NAME<<"/" << "ks_long_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
-		cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-		generateLongDslashL2Prefetches(l2prefs,false,compress12);
-		dslash_long_body(ivector,false,compress12);
-		mergeIvectorWithL2Prefetches(ivector, l2prefs);
-		dumpIVector(ivector,filename.str());
+        filename.str("");
+        filename.clear();
+        // Long Dslash
+        filename << "./"<<ARCH_NAME<<"/" << "ks_long_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        cout << "GENERATING " << filename.str() << endl;
+        l2prefs.resize(0);
+        ivector.resize(0);
+        generateLongDslashL2Prefetches(l2prefs,false,compress12);
+        dslash_long_body(ivector,false,compress12);
+        mergeIvectorWithL2Prefetches(ivector, l2prefs);
+        dumpIVector(ivector,filename.str());
 
-		filename.str("");filename.clear();
-		// rephase
-		filename << "./"<<ARCH_NAME<<"/" << "ks_rephase_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
-		cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-		generateRephaseL2Prefetches(l2prefs,compress12);
-		rephase_body(ivector,compress12);
-		mergeIvectorWithL2Prefetches(ivector, l2prefs);
-		dumpIVector(ivector,filename.str());
+        filename.str("");
+        filename.clear();
+        // rephase
+        filename << "./"<<ARCH_NAME<<"/" << "ks_rephase_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        cout << "GENERATING " << filename.str() << endl;
+        l2prefs.resize(0);
+        ivector.resize(0);
+        generateRephaseL2Prefetches(l2prefs,compress12);
+        rephase_body(ivector,compress12);
+        mergeIvectorWithL2Prefetches(ivector, l2prefs);
+        dumpIVector(ivector,filename.str());
 
-		filename.str("");filename.clear();
-		// load long links
-		filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
-		cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-		generateLoadLongLinkL2Prefetches(l2prefs,compress12);
-		load_longlinks_body(ivector,compress12);
-		mergeIvectorWithL2Prefetches(ivector, l2prefs);
-		dumpIVector(ivector,filename.str());
+        filename.str("");
+        filename.clear();
+        // load long links
+        filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        cout << "GENERATING " << filename.str() << endl;
+        l2prefs.resize(0);
+        ivector.resize(0);
+        generateLoadLongLinkL2Prefetches(l2prefs,compress12);
+        load_longlinks_body(ivector,compress12);
+        mergeIvectorWithL2Prefetches(ivector, l2prefs);
+        dumpIVector(ivector,filename.str());
 
-		for(int dim = 0; dim < 4; dim++) {
-			std::ostringstream filename;
-			for(int dir = 0; dir < 2; dir++) {
-				filename.str("");filename.clear();
-				filename << "./"<<ARCH_NAME<<"/ks_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<<num_components;
-				cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-				plain_dslash_face_unpack_from_dir_dim_vec(ivector, compress12,dir,dim);
-				generatePlainDslashFaceUnpackL2Prefetches(l2prefs, 2*dim+dir, compress12);
-				mergeIvectorWithL2Prefetches(ivector, l2prefs);
-				dumpIVector(ivector,filename.str());
+        for(int dim = 0; dim < 4; dim++) {
+            std::ostringstream filename;
+            for(int dir = 0; dir < 2; dir++) {
+                filename.str("");
+                filename.clear();
+                filename << "./"<<ARCH_NAME<<"/ks_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<<num_components;
+                cout << "GENERATING " << filename.str() << endl;
+                l2prefs.resize(0);
+                ivector.resize(0);
+                plain_dslash_face_unpack_from_dir_dim_vec(ivector, compress12,dir,dim);
+                generatePlainDslashFaceUnpackL2Prefetches(l2prefs, 2*dim+dir, compress12);
+                mergeIvectorWithL2Prefetches(ivector, l2prefs);
+                dumpIVector(ivector,filename.str());
 
-				filename.str("");filename.clear();
-				// long dslash
-				filename << "./"<<ARCH_NAME<<"/ks_long_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<<num_components;
-				cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-				long_dslash_face_unpack_from_dir_dim_vec(ivector, false, compress12,dir,dim);
-				generateLongDslashFaceUnpackL2Prefetches(l2prefs, 2*dim+dir, false, compress12);
-				mergeIvectorWithL2Prefetches(ivector, l2prefs);
-				dumpIVector(ivector,filename.str());
-			}
+                filename.str("");
+                filename.clear();
+                // long dslash
+                filename << "./"<<ARCH_NAME<<"/ks_long_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<<num_components;
+                cout << "GENERATING " << filename.str() << endl;
+                l2prefs.resize(0);
+                ivector.resize(0);
+                long_dslash_face_unpack_from_dir_dim_vec(ivector, false, compress12,dir,dim);
+                generateLongDslashFaceUnpackL2Prefetches(l2prefs, 2*dim+dir, false, compress12);
+                mergeIvectorWithL2Prefetches(ivector, l2prefs);
+                dumpIVector(ivector,filename.str());
+            }
 
-			filename.str("");filename.clear();
-			// load long links
-			filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_pack_to_forw_"<<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
-			cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-			generateLoadLongLinkFacePackL2Prefetches(l2prefs,compress12,dim);
-			load_longlinks_face_pack_to_dim(ivector,compress12,dim);
-			mergeIvectorWithL2Prefetches(ivector, l2prefs);
-			dumpIVector(ivector,filename.str());
+            filename.str("");
+            filename.clear();
+            // load long links
+            filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_pack_to_forw_"<<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+            cout << "GENERATING " << filename.str() << endl;
+            l2prefs.resize(0);
+            ivector.resize(0);
+            generateLoadLongLinkFacePackL2Prefetches(l2prefs,compress12,dim);
+            load_longlinks_face_pack_to_dim(ivector,compress12,dim);
+            mergeIvectorWithL2Prefetches(ivector, l2prefs);
+            dumpIVector(ivector,filename.str());
 
-			filename.str("");filename.clear();
-			// load long links
-			filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_unpack_from_forw_" <<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
-			cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-			generateLoadLongLinkFaceUnpackL2Prefetches(l2prefs,compress12,dim);
-			load_longlinks_face_unpack_from_dim(ivector,compress12,dim);
-			mergeIvectorWithL2Prefetches(ivector, l2prefs);
-			dumpIVector(ivector,filename.str());
-		}
-	}
+            filename.str("");
+            filename.clear();
+            // load long links
+            filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_unpack_from_forw_" <<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+            cout << "GENERATING " << filename.str() << endl;
+            l2prefs.resize(0);
+            ivector.resize(0);
+            generateLoadLongLinkFaceUnpackL2Prefetches(l2prefs,compress12,dim);
+            load_longlinks_face_unpack_from_dim(ivector,compress12,dim);
+            mergeIvectorWithL2Prefetches(ivector, l2prefs);
+            dumpIVector(ivector,filename.str());
+        }
+    }
 
-	for(int dir = 0; dir < 2; dir++) {
-		for(int dim = 0; dim < 4; dim++) {
-			std::ostringstream filename;
-			filename << "./"<<ARCH_NAME<<"/ks_dslash_face_pack_to_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_v"<< VECLEN <<"_s"<<SOALEN;
-			cout << "GENERATING " << filename.str() << endl; l2prefs.resize(0);	ivector.resize(0);
-			generateFacePackL2Prefetches(l2prefs, 2*dim+dir);
-			face_pack_to_dir_dim_vec(ivector,dir,dim);
-			mergeIvectorWithL2Prefetches(ivector, l2prefs);
-			dumpIVector(ivector,filename.str());
-		}
-	}
-	return 0;
+    for(int dir = 0; dir < 2; dir++) {
+        for(int dim = 0; dim < 4; dim++) {
+            std::ostringstream filename;
+            filename << "./"<<ARCH_NAME<<"/ks_dslash_face_pack_to_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_v"<< VECLEN <<"_s"<<SOALEN;
+            cout << "GENERATING " << filename.str() << endl;
+            l2prefs.resize(0);
+            ivector.resize(0);
+            generateFacePackL2Prefetches(l2prefs, 2*dim+dir);
+            face_pack_to_dir_dim_vec(ivector,dir,dim);
+            mergeIvectorWithL2Prefetches(ivector, l2prefs);
+            dumpIVector(ivector,filename.str());
+        }
+    }
+    return 0;
 }
 

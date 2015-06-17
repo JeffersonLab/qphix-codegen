@@ -129,37 +129,37 @@ string GatherFVec::serialize() const
 {
     std::ostringstream buf;
 
-	if(mask.empty()){
-		if(!a->isHalfType())
-			buf << v.getName() << " = *(" << a->getAddr(0) << ");" <<endl;
-		else {
-			printf("Error: Half type not supported for Scalar\n");
-			exit(1);
-		}
-	}
-	else {
-		if(!a->isHalfType()) {
-			printf("Error: Masked load not supported for Scalar\n");
-			exit(1);
-		}
-		else {
-			printf("Error: Half type not supported for Scalar\n");
-			exit(1);
-		}
-	}
-	return buf.str();
+    if(mask.empty()) {
+        if(!a->isHalfType())
+            buf << v.getName() << " = *(" << a->getAddr(0) << ");" <<endl;
+        else {
+            printf("Error: Half type not supported for Scalar\n");
+            exit(1);
+        }
+    }
+    else {
+        if(!a->isHalfType()) {
+            printf("Error: Masked load not supported for Scalar\n");
+            exit(1);
+        }
+        else {
+            printf("Error: Half type not supported for Scalar\n");
+            exit(1);
+        }
+    }
+    return buf.str();
 }
 
 string ScatterFVec::serialize() const
 {
     std::ostringstream buf;
-	if(!a->isHalfType())
-		buf << "*(" << a->getAddr(0) << ") = " << v.getName() <<  ";" <<endl;
-	else{
-		printf("Error: Half type not supported for Scalar\n");
-		exit(1);
-	}
-	return buf.str();
+    if(!a->isHalfType())
+        buf << "*(" << a->getAddr(0) << ") = " << v.getName() <<  ";" <<endl;
+    else {
+        printf("Error: Half type not supported for Scalar\n");
+        exit(1);
+    }
+    return buf.str();
 }
 
 string LoadBroadcast::serialize() const
@@ -275,10 +275,10 @@ string SetZero::serialize() const
     return  ret.getName()+" = " ZERO ";";
 }
 
-string Set1Const::serialize() const { 
-	std::ostringstream buf;
-	buf << ret.getName() << " = " << val << "; " << endl;
-	return  buf.str();
+string Set1Const::serialize() const {
+    std::ostringstream buf;
+    buf << ret.getName() << " = " << val << "; " << endl;
+    return  buf.str();
 }
 
 string Mul::serialize() const
@@ -404,13 +404,13 @@ void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, c
 
 void storeSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
 {
-	ivector.push_back( new StoreFVec(ret, a1, 0));
+    ivector.push_back( new StoreFVec(ret, a1, 0));
 }
 
 void loadSplit3SOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, const Address *a3, int soanum, int soalen, int forward)
 {
-	printf("Should not reach here! %s:%d\n", __FILE__, __LINE__);
-	exit(1);
+    printf("Should not reach here! %s:%d\n", __FILE__, __LINE__);
+    exit(1);
 }
 
 void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)
