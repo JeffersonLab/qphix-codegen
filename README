@@ -21,6 +21,7 @@ Available targets are:
  mic - Xeon Phi
  avx - Regular AVX 
  avx2 - AVX2 (e.g. for Haswell) -- untested
+ avx512 - AVX512 (e.g. for KNL) -- untested
  sse  - For SSE -- untested
  scalar -- C, scalar code (SOALEN=1)
 
@@ -110,14 +111,14 @@ b) The generators for the Kernels:
                    associated load, store, prefetch, stream etc functions (which use the Instruction objects)
 
   
-   dslash.h  -- defines the code generator functions used to construct a dslash (projections, etc)
-   dslash_common.h -- defines the main generator routines for things like projections, mat mults, face packs etc.
-   dslash.cc -- implements the main kernels using dslash_common.h
-   codegen.cc -- is the driver, that just calls generate_code() from dslash.cc
+   dslash_common.h  -- defines the prototypes for commonly used helper functions like complex arithmetic and declaring data types
+   dslash_common.h -- implements the prototypes from dslash_common.h
+   dslash.cc -- implements the main kernels for wilson dslash using dslash_common.h
+   ks_dslash.cc -- implements the main kernels for KS dslash using dslash_common.h
 
 
 The various code-generation options in the inst_xx_vecX.cc files, the headers etc are controlled by compiler
-#defines defined in the Makefiles, and customMakef.target files.
+#defines defined in the Makefiles, and customMake.target files.
 
  
  

@@ -1,4 +1,9 @@
 
+DRIVER=dslash
+ifeq ($(milc),1)
+DRIVER=ks_dslash
+endif
+
 mode=mic
 
 mode:=$(strip $(mode))
@@ -93,8 +98,8 @@ deflist += PRECISION
 DEFS += $(strip $(foreach var, $(yesnolist), $(if $(filter 1, $($(var))), -D$(var))))
 DEFS += $(strip $(foreach var, $(deflist), $(if $($(var)), -D$(var)=$($(var)))))
 
-SOURCES = codegen.cc data_types.cc dslash.cc dslash_common.cc inst_dp_vec8.cc inst_sp_vec16.cc inst_dp_vec4.cc inst_sp_vec8.cc inst_sp_vec4.cc inst_dp_vec2.cc inst_scalar.cc
-HEADERS = address_types.h  data_types.h  dslash.h  instructions.h Makefile $(CONFFILE)
+SOURCES = data_types.cc $(DRIVER).cc dslash_common.cc inst_dp_vec8.cc inst_sp_vec16.cc inst_dp_vec4.cc inst_sp_vec8.cc inst_sp_vec4.cc inst_dp_vec2.cc inst_scalar.cc
+HEADERS = address_types.h  data_types.h  dslash_common.h  instructions.h Makefile $(CONFFILE)
 
 all: codegen
 

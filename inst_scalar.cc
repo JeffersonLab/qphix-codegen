@@ -79,17 +79,17 @@ string LoadFVec::serialize() const
             buf << v.getName() << " = *(" << a->serialize() << ");" <<endl;
         }
         else {
-            printf("Error: Half type not supported for SSE\n");
+            printf("Error: Half type not supported for Scalar\n");
             exit(1);
         }
     }
     else {
         if(!a->isHalfType()) {
-            printf("Error: Masked load not supported for SSE\n");
+            printf("Error: Masked load not supported for Scalar\n");
             exit(1);
         }
         else {
-            printf("Error: Half type not supported for SSE\n");
+            printf("Error: Half type not supported for Scalar\n");
             exit(1);
         }
     }
@@ -108,7 +108,7 @@ string StoreFVec::serialize() const
             buf << "*(" << a->serialize() << ") = " << v.getName() <<  ";" <<endl;
         }
         else {
-            printf("Error: Half type not supported for SSE\n");
+            printf("Error: Half type not supported for Scalar\n");
             exit(1);
         }
     }
@@ -117,7 +117,7 @@ string StoreFVec::serialize() const
             buf << "*(" << a->serialize() << ") = " << v.getName() <<  ";" <<endl;
         }
         else {
-            printf("Error: Half type not supported for SSE\n");
+            printf("Error: Half type not supported for Scalar\n");
             exit(1);
         }
     }
@@ -129,18 +129,37 @@ string GatherFVec::serialize() const
 {
     std::ostringstream buf;
 
-    printf("Error: Gather not supported for SSE\n");
-    exit(1);
-    return buf.str();
-
+	if(mask.empty()){
+		if(!a->isHalfType())
+			buf << v.getName() << " = *(" << a->getAddr(0) << ");" <<endl;
+		else {
+			printf("Error: Half type not supported for Scalar\n");
+			exit(1);
+		}
+	}
+	else {
+		if(!a->isHalfType()) {
+			printf("Error: Masked load not supported for Scalar\n");
+			exit(1);
+		}
+		else {
+			printf("Error: Half type not supported for Scalar\n");
+			exit(1);
+		}
+	}
+	return buf.str();
 }
 
 string ScatterFVec::serialize() const
 {
     std::ostringstream buf;
-    printf("Error: Scatter not supported for SSE\n");
-    exit(1);
-    return buf.str();
+	if(!a->isHalfType())
+		buf << "*(" << a->getAddr(0) << ") = " << v.getName() <<  ";" <<endl;
+	else{
+		printf("Error: Half type not supported for Scalar\n");
+		exit(1);
+	}
+	return buf.str();
 }
 
 string LoadBroadcast::serialize() const
@@ -151,7 +170,7 @@ string LoadBroadcast::serialize() const
         buf << v.getName() << " = (*" << a->serialize() << ");" << endl;
     }
     else {
-        printf("Error: Half type not supported for SSE\n");
+        printf("Error: Half type not supported for Scalar\n");
         exit(1);
     }
 
@@ -220,8 +239,8 @@ GatherPrefetchL1::GatherPrefetchL1( const GatherAddress* a_, int type) : a(a_)
 string GatherPrefetchL1::serialize() const
 {
     std::ostringstream buf;
-    buf << "#error \"Gather Prefetch is not supported in SSE\"" <<endl;
-    printf("Gather Prefetch is not supported in SSE\n");
+    buf << "#error \"Gather Prefetch is not supported in Scalar\"" <<endl;
+    printf("Gather Prefetch is not supported in Scalar\n");
     exit(1);
     return buf.str();
 }
@@ -244,8 +263,8 @@ GatherPrefetchL2::GatherPrefetchL2( const GatherAddress* a_, int type) : a(a_)
 string GatherPrefetchL2::serialize() const
 {
     std::ostringstream buf;
-    buf << "#error \"Gather Prefetch is not supported in SSE\"" <<endl;
-    printf("Gather Prefetch is not supported in SSE\n");
+    buf << "#error \"Gather Prefetch is not supported in Scalar\"" <<endl;
+    printf("Gather Prefetch is not supported in Scalar\n");
     exit(1);
     return buf.str();
 
@@ -254,6 +273,12 @@ string GatherPrefetchL2::serialize() const
 string SetZero::serialize() const
 {
     return  ret.getName()+" = " ZERO ";";
+}
+
+string Set1Const::serialize() const { 
+	std::ostringstream buf;
+	buf << ret.getName() << " = " << val << "; " << endl;
+	return  buf.str();
 }
 
 string Mul::serialize() const
@@ -328,7 +353,7 @@ public:
             buf << v.getName() << " =  (*(" << a1->serialize() << "));" << endl;
         }
         else {
-            printf("Error: Half type not supported for SSE\n");
+            printf("Error: Half type not supported for Scalar\n");
             exit(1);
         }
 
@@ -350,7 +375,7 @@ private:
     const int forward;
 };
 
-void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask)
+void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen)
 {
     if(soalen == 1) {
         ivector.push_back( new LoadFVec(ret, a, string("")));
@@ -372,9 +397,20 @@ void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int so
     }
 }
 
-void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward, string mask)
+void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
 {
     ivector.push_back( new LoadFVec(ret, a1, string("")));
+}
+
+void storeSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
+{
+	ivector.push_back( new StoreFVec(ret, a1, 0));
+}
+
+void loadSplit3SOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, const Address *a3, int soanum, int soalen, int forward)
+{
+	printf("Should not reach here! %s:%d\n", __FILE__, __LINE__);
+	exit(1);
 }
 
 void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)

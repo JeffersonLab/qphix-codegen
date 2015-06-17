@@ -4,7 +4,7 @@
 
 using namespace std;
 
-enum AddressType { GAUGE, SPINOR, CLOVER_DIAG, CLOVER_OFFDIAG, ADDRESS_OF_SCALAR, GENERIC_ADDRESS};
+enum AddressType { GAUGE, SPINOR, KS, CLOVER_DIAG, CLOVER_OFFDIAG, ADDRESS_OF_SCALAR, GENERIC_ADDRESS}; 
 
 class Address
 {
@@ -155,6 +155,22 @@ protected:
 
 
 
+class KSAddress : public Address {
+public:
+	KSAddress(const string& base_, int color_, int reim_, int isHalfType) : Address(isHalfType), base(base_), color(color_), reim(reim_) {};
+	string serialize(void) const {
+		ostringstream outbuf;
+		outbuf<< "(*" << base << ")["<< color<< "][" << reim << "]";
+
+		return outbuf.str();
+	}
+	AddressType getType(void) const { return KS; }
+protected:
+	const string base;
+	const int color;
+	const int reim;
+};
+
 class AddressOffset : public Address
 {
 public:
@@ -173,6 +189,22 @@ public:
 private:
     const Address* a;
     const string offset_var;
+};
+
+class AddressScaledOffset : public Address {
+public:
+	AddressScaledOffset(const Address* a_, string offset_var_, int scale_) : Address(a_->isHalfType()), a(a_), offset_var(offset_var_), scale(scale_) {}
+	AddressType getType(void) const { return a->getType(); }
+	string serialize() const {
+		ostringstream outbuf;
+		outbuf << "(" << a->serialize() << " + (" << offset_var <<" * "<< scale <<"))";
+		return outbuf.str();
+	}
+
+private:
+	const Address* a;
+	const string offset_var;
+	const int scale;
 };
 
 class AddressImm : public Address
@@ -218,7 +250,7 @@ private:
 class GatherAddress : public Address
 {
 public:
-    GatherAddress(const Address *base_, string& offsets_) : Address(base_->isHalfType()), base(base_), offsets(offsets_) {};
+    GatherAddress(const Address *base_, const string& offsets_) : Address(base_->isHalfType()), base(base_), offsets(offsets_) {};
     string serialize(void) const
     {
         ostringstream outbuf;

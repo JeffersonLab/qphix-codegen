@@ -106,6 +106,18 @@ public:
     }
 };
 
+class ElseIfStatement : public Instruction { 
+public:
+	ElseIfStatement(const string& condition_) : condition(condition_) {}
+	string serialize() const {
+		return "} else if ( "+condition+" ) { ";
+	}
+	int numIfs() const { return 1; }
+	int numScopes() const { return 1; }
+private:
+	const string condition;
+};
+
 class IfStringCond : public Instruction
 {
 public:
@@ -444,6 +456,16 @@ private:
     const FVec ret;
 };
 
+class Set1Const : public Instruction {
+public:
+	Set1Const( const FVec& ret_, const double val_) : ret(ret_), val(val_) {}
+	string serialize() const;
+	int numArithmeticInst() const { return 1;}
+private:
+	const FVec ret;
+	const double val;
+};
+
 class Mul : public Instruction
 {
 public:
@@ -542,12 +564,21 @@ private:
 };
 
 
-void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask);
+void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen);
 void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen);
 
-void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward, string mask);
-void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask);
-void packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask);
+void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward);
+void storeSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward);
+void loadSplit3SOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, const Address *a3, int soanum, int soalen, int forward);
+void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask=0xFFFF);
+void packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask=0xFFFF);
+inline void packFVec(InstVector& ivector, const FVec& ret, Address *a, int mask, int possibleMask)
+{
+	stringstream msk_str;
+	msk_str << "0x" << hex << mask;
+	packFVec(ivector, ret, a, msk_str.str(), possibleMask);
+}
+
 
 void gatherFVec(InstVector& ivector, const FVec& ret, GatherAddress *a, string mask);
 void scatterFVec(InstVector& ivector, const FVec& ret, GatherAddress *a);
@@ -582,6 +613,11 @@ inline void elseStatement(InstVector& ivector)
     ivector.push_back( new ElseStatement());
 }
 
+inline void elseIfStatement(InstVector& ivector, string condition) 
+{
+	ivector.push_back( new ElseIfStatement(condition));
+}
+
 inline void ifAllOneStatement(InstVector& ivector, string condition)
 {
     ivector.push_back( new IfAllOneCond(condition));
@@ -612,6 +648,11 @@ inline void initFVec(InstVector& ivector, const FVec& ret)
 inline void setZero(InstVector& ivector, const FVec& ret)
 {
     ivector.push_back(new SetZero(ret));
+}
+
+inline void set1Const(InstVector& ivector, const FVec& ret, const double val)
+{
+	ivector.push_back(new Set1Const(ret, val));
 }
 
 inline void mulFVec(InstVector& ivector, const FVec& ret, const FVec& a, const FVec& b, string mask = "")
@@ -672,6 +713,12 @@ inline void declareMask(InstVector& ivector, const string name, const string val
 inline void intToMask(InstVector& ivector, const string maskname, const string intname)
 {
     ivector.push_back(new IntToMask(maskname, intname));
+}
+
+inline void intToMask(InstVector& ivector, const string maskname, const int msk) {
+	stringstream msk_str;
+	msk_str << "0x" << hex << msk;
+	ivector.push_back(new IntToMask(maskname, msk_str.str()));
 }
 
 #endif

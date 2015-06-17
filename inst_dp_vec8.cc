@@ -421,6 +421,12 @@ string SetZero::serialize() const
     return  ret.getName()+" = _mm512_setzero_pd(); ";
 }
 
+string Set1Const::serialize() const { 
+	std::ostringstream buf;
+	buf << ret.getName() << " = _mm512_set1_pd(" << val << "); " << endl;
+	return  buf.str();
+}
+
 string Mul::serialize() const
 {
     if(mask.empty()) {
@@ -509,7 +515,7 @@ private:
     const int imm;
 };
 
-void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask)
+void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen)
 {
     int mskbits = (((1 << soalen)-1) << (soanum*soalen));
     stringstream mk;
@@ -527,7 +533,7 @@ void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int so
     ivector.push_back( new PackStoreFVec(ret, a, localmask));
 }
 
-void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward, string mask)
+void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
 {
     int mskbits1, mskbits2;
 
@@ -548,6 +554,56 @@ void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, c
     string localmask2 = mk2.str();
     ivector.push_back( new LoadUnpackFVec(ret, a1, localmask1));
     ivector.push_back( new LoadUnpackFVec(ret, a2, localmask2));
+}
+
+void storeSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
+{
+	int mskbits1, mskbits2;
+	if(forward) {
+		mskbits1 = (((1 << (soalen-1))-1) << (soanum*soalen));
+		mskbits2 = (1 << ((soanum+1)*soalen-1));
+	}
+	else {
+		mskbits1 = (1 << (soanum*soalen));
+		mskbits2 = (((1 << (soalen-1))-1) << (soanum*soalen+1));
+	}
+
+	stringstream mk1;
+	mk1 << "0x" << hex << mskbits1;
+	string localmask1 = mk1.str();
+	stringstream mk2;
+	mk2 << "0x" << hex << mskbits2;
+	string localmask2 = mk2.str();
+	ivector.push_back( new PackStoreFVec(ret, a1, localmask1));
+	ivector.push_back( new PackStoreFVec(ret, a2, localmask2));
+}
+
+void loadSplit3SOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, const Address *a3, int soanum, int soalen, int forward)
+{
+	int mskbits1, mskbits2, mskbits3;
+	if(forward) {
+		mskbits1 = (((1 << (soalen-2))-1) << (soanum*soalen));
+		mskbits2 = (1 << ((soanum+1)*soalen-2));
+		mskbits3 = (1 << ((soanum+1)*soalen-1));
+	}
+	else {
+		mskbits1 = (1 << (soanum*soalen));
+		mskbits2 = (1 << (soanum*soalen+1));
+		mskbits3 = (((1 << (soalen-2))-1) << (soanum*soalen+2));
+	}
+
+	stringstream mk1;
+	mk1 << "0x" << hex << mskbits1;
+	string localmask1 = mk1.str();
+	stringstream mk2;
+	mk2 << "0x" << hex << mskbits2;
+	string localmask2 = mk2.str();
+	stringstream mk3;
+	mk3 << "0x" << hex << mskbits3;
+	string localmask3 = mk3.str();
+	ivector.push_back( new LoadUnpackFVec(ret, a1, localmask1));
+	ivector.push_back( new LoadUnpackFVec(ret, a2, localmask2));
+	ivector.push_back( new LoadUnpackFVec(ret, a3, localmask3));
 }
 
 void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)

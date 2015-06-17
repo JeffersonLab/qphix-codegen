@@ -407,6 +407,12 @@ string SetZero::serialize() const
     return  ret.getName()+" = _mm512_setzero_ps(); ";
 }
 
+string Set1Const::serialize() const { 
+	std::ostringstream buf;
+	buf << ret.getName() << " = _mm512_set1_ps(" << val << "); " << endl;
+	return  buf.str();
+}
+
 string Mul::serialize() const
 {
     if(mask.empty()) {
@@ -492,7 +498,22 @@ private:
     const int imm;
 };
 
-void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask)
+#ifdef AVX512
+class Shuffle32x4 : public Instruction {
+public:
+	Shuffle32x4(const FVec& ret_, const string mk_, const FVec& a_, const FVec& b_, const int imm_) : ret(ret_), mk(mk_), a(a_), b(b_), imm(imm_) {}
+	string serialize() const {
+		ostringstream stream;
+		stream << ret.getName() << " = _mm512_mask_shuffle_f32x4(" << ret.getName() << ", " << mk << ", " << a.getName() << ", " << b.getName() << ", " << imm << ");" ;
+		return stream.str();
+	}
+	int numArithmeticInst() const { return 0; }
+private:
+	const FVec ret; const FVec a; const FVec b; const string mk; const int imm;
+};
+#endif
+
+void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen)
 {
     int mskbits = (((1 << soalen)-1) << (soanum*soalen));
     stringstream mk;
@@ -510,7 +531,7 @@ void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int so
     ivector.push_back( new PackStoreFVec(ret, a, localmask));
 }
 
-void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward, string mask)
+void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
 {
     int mskbits1, mskbits2;
 
@@ -531,6 +552,56 @@ void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, c
     string localmask2 = mk2.str();
     ivector.push_back( new LoadUnpackFVec(ret, a1, localmask1));
     ivector.push_back( new LoadUnpackFVec(ret, a2, localmask2));
+}
+
+void storeSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
+{
+	int mskbits1, mskbits2;
+	if(forward) {
+		mskbits1 = (((1 << (soalen-1))-1) << (soanum*soalen));
+		mskbits2 = (1 << ((soanum+1)*soalen-1));
+	}
+	else {
+		mskbits1 = (1 << (soanum*soalen));
+		mskbits2 = (((1 << (soalen-1))-1) << (soanum*soalen+1));
+	}
+
+	stringstream mk1;
+	mk1 << "0x" << hex << mskbits1;
+	string localmask1 = mk1.str();
+	stringstream mk2;
+	mk2 << "0x" << hex << mskbits2;
+	string localmask2 = mk2.str();
+	ivector.push_back( new PackStoreFVec(ret, a1, localmask1));
+	ivector.push_back( new PackStoreFVec(ret, a2, localmask2));
+}
+
+void loadSplit3SOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, const Address *a3, int soanum, int soalen, int forward)
+{
+	int mskbits1, mskbits2, mskbits3;
+	if(forward) {
+		mskbits1 = (((1 << (soalen-2))-1) << (soanum*soalen));
+		mskbits2 = (1 << ((soanum+1)*soalen-2));
+		mskbits3 = (1 << ((soanum+1)*soalen-1));
+	}
+	else {
+		mskbits1 = (1 << (soanum*soalen));
+		mskbits2 = (1 << (soanum*soalen+1));
+		mskbits3 = (((1 << (soalen-2))-1) << (soanum*soalen+2));
+	}
+
+	stringstream mk1;
+	mk1 << "0x" << hex << mskbits1;
+	string localmask1 = mk1.str();
+	stringstream mk2;
+	mk2 << "0x" << hex << mskbits2;
+	string localmask2 = mk2.str();
+	stringstream mk3;
+	mk3 << "0x" << hex << mskbits3;
+	string localmask3 = mk3.str();
+	ivector.push_back( new LoadUnpackFVec(ret, a1, localmask1));
+	ivector.push_back( new LoadUnpackFVec(ret, a2, localmask2));
+	ivector.push_back( new LoadUnpackFVec(ret, a3, localmask3));
 }
 
 void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)
@@ -568,8 +639,15 @@ void fperm32x4(InstVector& ivector, const FVec& ret, const string mk, const FVec
     ivector.push_back(new Perm32x4(ret, mk, a, imm));
 }
 
+#ifdef AVX512
+void shuffle32x4(InstVector& ivector, const FVec& ret, const string mk, const FVec& a, const FVec& b, const int imm) {
+	ivector.push_back(new Shuffle32x4(ret, mk, a, b, imm));
+}
+#endif
+
 void transpose4x4(InstVector& ivector, const FVec r[4], const FVec f[4])
 {
+#ifndef AVX512
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
             int mskbits = (((1 << 4)-1) << (j*4));
@@ -579,10 +657,21 @@ void transpose4x4(InstVector& ivector, const FVec r[4], const FVec f[4])
             fperm32x4(ivector, r[i], localmask, f[j], 0x55*i);
         }
     }
+#else
+	for(int i = 0; i < 4; i++) {
+		for(int j = 0; j < 2; j++) {
+			int mskbits = ((0x0F0F) << (j*4));
+			stringstream mk; mk << "0x" << hex << mskbits;
+			string localmask = mk.str();
+			shuffle32x4(ivector, r[i], localmask, f[j], f[j+2], 0x55*i);
+		}
+	}
+#endif
 }
 
 void transpose2x2(InstVector& ivector, const FVec r[2], const FVec f[2])
 {
+#ifndef AVX512
     for(int i = 0; i < 2; i++) {
         for(int j = 0; j < 2; j++) {
             int mskbits = (((1 << 8)-1) << (j*8));
@@ -592,6 +681,11 @@ void transpose2x2(InstVector& ivector, const FVec r[2], const FVec f[2])
             fperm32x4(ivector, r[i], localmask, f[j], 0x44+0xAA*i);
         }
     }
+#else
+	for(int i = 0; i < 2; i++) {
+		shuffle32x4(ivector, r[i], fullMask, f[0], f[1], 0x44+0xAA*i);
+	}
+#endif
 }
 
 void transpose1x1(InstVector& ivector, const FVec r[1], const FVec f[1])

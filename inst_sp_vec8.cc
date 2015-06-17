@@ -261,6 +261,12 @@ string SetZero::serialize() const
     return  ret.getName()+" = _mm256_setzero_ps(); ";
 }
 
+string Set1Const::serialize() const { 
+	std::ostringstream buf;
+	buf << ret.getName() << " = _mm256_set1_ps(" << val << "); " << endl;
+	return  buf.str();
+}
+
 string Mul::serialize() const
 {
     if(mask.empty()) {
@@ -499,6 +505,99 @@ private:
     const int forward;
 };
 
+class StoreSplitSOAFVec : public MemRefInstruction
+{
+  public:
+    StoreSplitSOAFVec( const FVec& v_, const Address* a1_, const Address* a2_, const int soanum_, const int soalen_, int forward_) : v(v_), a1(a1_), a2(a2_), soanum(soanum_), soalen(soalen_), forward(forward_) {}
+    string serialize() const {
+      std::ostringstream buf;
+	  if(!a1->isHalfType()) {
+		  if(forward) {
+			  if(soalen == 8) {
+				  buf << "_mm_storeu_ps(" << a1->serialize() << ", _mm256_castps256_ps128(" << v.getName() << "));" << endl;
+				  buf << "_mm_store_sd((double*)(" << a1->serialize() << " + 4), _mm_castps_pd(_mm256_extractf128_ps(" << v.getName() << ", 1)));" << endl;
+				  buf << "((int*)(" << a1->serialize() << " + 6))[0] = _mm_extract_ps(_mm256_extractf128_ps(" << v.getName() << ", 1), 2);" << endl;
+				  buf << "((int*)" << a2->serialize() << ")[0] = _mm_extract_ps(_mm256_extractf128_ps(" << v.getName() << ", 1), 3);" << endl;
+			  } 
+			  else {
+				  buf << "_mm_store_sd((double*)" << a1->serialize() << ", _mm_castps_pd(_mm256_extractf128_ps(" << v.getName() << ", " << soanum << ")));" << endl;
+				  buf << "((int*)(" << a1->serialize() << " + 2))[0] = _mm_extract_ps(_mm256_extractf128_ps(" << v.getName() << ", " << soanum << "), 2);" << endl;
+				  buf << "((int*)" << a2->serialize() << ")[0] = _mm_extract_ps(_mm256_extractf128_ps(" << v.getName() << ", " << soanum << "), 3);" << endl;
+			  }      
+		  }
+		  else{
+			  if(soalen == 8) {
+				  buf << "_mm_store_ss(" << a1->serialize() << ", _mm256_castps256_ps128(" << v.getName() << "));" << endl;
+				  buf << "((int*)" << a2->serialize() << ")[0] = _mm_extract_ps(_mm256_castps256_ps128(" << v.getName() << "), 1);" << endl;
+				  buf << "_mm_storeh_pd((double*)(" << a2->serialize() << " + 1), _mm_castps_pd(_mm256_castps256_ps128(" << v.getName() << ")));" << endl;
+				  buf << "_mm_storeu_ps((" << a2->serialize() << " + 3), _mm256_extractf128_ps(" << v.getName() << ", 1));" << endl;
+			  } else {
+				  buf << "_mm_store_ss(" << a1->serialize() << ", _mm256_extractf128_ps(" << v.getName() << ", " << soanum << "));" << endl;
+				  buf << "((int*)" << a2->serialize() << ")[0] = _mm_extract_ps(_mm256_extractf128_ps(" << v.getName() << ", " << soanum << "), 1);" << endl;
+				  buf << "_mm_storeh_pd((double*)(" << a2->serialize() << " + 1), _mm_castps_pd(_mm256_extractf128_ps(" << v.getName() << ", " << soanum << ")));" << endl;
+			  }
+		  }
+	  }
+	  else {
+		  buf << "#pragma error \"Half Prec Not Implemented yet!\"" << endl;
+	  }
+	  return buf.str();
+    }
+    const Address* getAddress() const { return a1; }
+    MemRefType getType() const { return LOAD_MASKED_VEC; }
+  private:
+    const FVec v;
+    const Address* a1;
+    const Address* a2;
+    const int soalen, soanum;
+    const int forward;
+};
+
+class LoadSplit3SOAFVec : public MemRefInstruction
+{
+  public:
+    LoadSplit3SOAFVec( const FVec& v_, const Address* a1_, const Address* a2_, const Address* a3_, const int soanum_, const int soalen_, int forward_) : v(v_), a1(a1_), a2(a2_), a3(a3_), soanum(soanum_), soalen(soalen_), forward(forward_) {}
+    string serialize() const {
+      std::ostringstream buf;
+	  if(!a1->isHalfType()) {
+		  if(forward) {
+			  if(soalen == 8) {
+				  buf << v.getName() << " =  _mm256_blend_ps(_mm256_blend_ps(_mm256_loadu_ps(" << a1->serialize() << "), _mm256_broadcast_ss(" <<
+					  a2->serialize() << "), " << (1 << (soalen-2)) << "), _mm256_broadcast_ss(" << a3->serialize() << "), " << (1 << (soalen-1)) << ");" << endl;
+			  } 
+			  else {
+				  buf << v.getName() << " =  _mm256_insertf128_ps(" << v.getName() <<
+					  ", _mm_blend_ps(_mm_blend_ps(_mm_loadu_ps(" << a1->serialize() << "), _mm_broadcast_ss(" << a2->serialize() << "), " << (1 << (soalen-2)) << 
+					  "), _mm_broadcast_ss(" << a3->serialize() << "), " << (1 << (soalen-1)) << "), " << soanum << ");" << endl;
+			  }      
+		  }
+		  else{
+			  if(soalen == 8) {
+				  buf << v.getName() << " =  _mm256_blend_ps(_mm256_blend_ps(_mm256_loadu_ps((" << a3->serialize() << ")-2), _mm256_broadcast_ss(" << a2->serialize() << 
+					  "), 2), _mm256_broadcast_ss(" << a1->serialize() << "), 1);" << endl;
+			  } else {
+				  buf << v.getName() << " =  _mm256_insertf128_ps(" << v.getName() <<
+					  ", _mm_blend_ps(_mm_blend_ps(_mm_loadu_ps((" << a2->serialize() << ")-2), _mm_broadcast_ss(" << a2->serialize() << 
+					  "), 2), _mm_broadcast_ss(" << a1->serialize() << "), 1), " << soanum << ");" << endl;
+			  }
+		  }
+	  }
+	  else {
+		  buf << "#pragma error \"Half Prec Not Implemented yet!\"" << endl;
+	  }
+      return buf.str();
+    }
+    const Address* getAddress() const { return a1; }
+    MemRefType getType() const { return LOAD_MASKED_VEC; }
+  private:
+    const FVec v;
+    const Address* a1;
+    const Address* a2;
+    const Address* a3;
+    const int soalen, soanum;
+    const int forward;
+};
+
 class CondInsertFVecElement : public MemRefInstruction
 {
 public:
@@ -573,7 +672,41 @@ private:
     const bool skipCond;
 };
 
-void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen, string mask)
+class UnpackFVec : public MemRefInstruction
+{
+public:
+	UnpackFVec( const FVec& v_, const Address* a_, string mask_) : v(v_), a(a_), mask(mask_) {}
+	string serialize() const {
+		std::ostringstream buf;
+		buf << "_mm256_expand_ps(" << a->serialize() << ", " << mask << ", " << v.getName() << ");" << endl;
+		return buf.str();
+	}
+	const Address* getAddress() const { return a; }
+	MemRefType getType() const { return STORE_MASKED_VEC; }
+private:
+	const FVec v;
+	const Address* a;
+	const string mask;
+};
+
+class PackFVec : public MemRefInstruction
+{
+public:
+	PackFVec( const FVec& v_, const Address* a_, string mask_) : v(v_), a(a_), mask(mask_) {}
+	string serialize() const {
+		std::ostringstream buf;
+		buf << "_mm256_compress_ps(" << a->serialize() << ", " << mask << ", " << v.getName() << ");" << endl;
+		return buf.str();
+	}
+	const Address* getAddress() const { return a; }
+	MemRefType getType() const { return STORE_MASKED_VEC; }
+private:
+	const FVec v;
+	const Address* a;
+	const string mask;
+};
+
+void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen)
 {
     if(soalen == 8) {
         ivector.push_back( new LoadFVec(ret, a, string("")));
@@ -601,9 +734,19 @@ void storeSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int so
     }
 }
 
-void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward, string mask)
+void loadSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
 {
     ivector.push_back( new LoadSplitSOAFVec(ret, a1, a2, soanum, soalen, forward));
+}
+
+void storeSplitSOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, int soanum, int soalen, int forward)
+{
+	ivector.push_back( new StoreSplitSOAFVec(ret, a1, a2, soanum, soalen, forward));
+}
+
+void loadSplit3SOAFVec(InstVector& ivector, const FVec& ret, const Address *a1, const Address *a2, const Address *a3, int soanum, int soalen, int forward)
+{
+	ivector.push_back( new LoadSplit3SOAFVec(ret, a1, a2, a3, soanum, soalen, forward));
 }
 
 void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)
@@ -614,11 +757,14 @@ void unpackFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, i
             nBits++;
         }
 
-    for(int i = 0; i < 8; i++)
-        if(possibleMask & (1 << i)) {
-            ivector.push_back( new CondInsertFVecElement(ret, new AddressImm(a, pos), mask, i, nBits==1));
-            //pos++;
-        }
+	if(possibleMask!=0xFFFF) {
+		for(int i = 0; i < 8; i++) if(possibleMask & (1 << i)) {
+				ivector.push_back( new CondInsertFVecElement(ret, new AddressImm(a, pos), mask, i, nBits==1));
+			}
+	}
+	else {
+		ivector.push_back( new UnpackFVec(ret, a, mask));
+	}
 }
 
 void packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int possibleMask)
@@ -629,11 +775,14 @@ void packFVec(InstVector& ivector, const FVec& ret, Address *a, string mask, int
             nBits++;
         }
 
-    for(int i = 0; i < 8; i++)
-        if(possibleMask & (1 << i)) {
-            ivector.push_back( new CondExtractFVecElement(ret, new AddressImm(a, pos), mask, i, nBits==1));
-            //pos++;
-        }
+	if(possibleMask != 0xFFFF) {
+		for(int i = 0; i < 8; i++) if(possibleMask & (1 << i)) {
+				ivector.push_back( new CondExtractFVecElement(ret, new AddressImm(a, pos), mask, i, nBits==1));
+			}
+	}
+	else {
+		ivector.push_back( new PackFVec(ret, a, mask));
+	}
 }
 
 void gatherFVec(InstVector& ivector, const FVec& ret, GatherAddress *a, string mask)
