@@ -581,7 +581,7 @@ public:
                         "), 2), _mm256_broadcast_ss(" << a1->serialize() << "), 1);" << endl;
                 } else {
                     buf << v.getName() << " =  _mm256_insertf128_ps(" << v.getName() <<
-                        ", _mm_blend_ps(_mm_blend_ps(_mm_loadu_ps((" << a2->serialize() << ")-2), _mm_broadcast_ss(" << a2->serialize() <<
+                        ", _mm_blend_ps(_mm_blend_ps(_mm_loadu_ps((" << a3->serialize() << ")-2), _mm_broadcast_ss(" << a2->serialize() <<
                         "), 2), _mm_broadcast_ss(" << a1->serialize() << "), 1), " << soanum << ");" << endl;
                 }
             }
