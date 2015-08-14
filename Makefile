@@ -1,5 +1,6 @@
 
 DRIVER=dslash
+milc=1
 ifeq ($(milc),1)
 DRIVER=ks_dslash
 endif
