@@ -374,6 +374,35 @@ private:
     int imm;
 };
 
+class PermuteFVec : public Instruction
+{
+public:
+    PermuteFVec(const FVec& ret_, const FVec& a_, int dir_) : ret(ret_), a(a_), dir(dir_/2) {}
+    string serialize() const
+    {
+        ostringstream stream;
+		if(dir < 2) {
+			string imm = (dir == 0 ? "0xB1" : "0x4E");
+	        stream << ret.getName() << " = _mm256_permute_ps(" << a.getName() << ", "  << imm << ");";
+		}
+		else if(dir == 2) {
+			stream << ret.getName() << " = _mm256_permute2f128_ps(" << a.getName() << ", "  << a.getName() << ", 0x11);" ;
+		}
+		else {
+			// nothing needs to be done for dir 3
+		}
+        return stream.str();
+    }
+    int numArithmeticInst() const
+    {
+        return 0;
+    }
+private:
+    const FVec ret;
+    const FVec a;
+    int dir;
+};
+
 class LoadHalfFVec : public MemRefInstruction
 {
 public:
@@ -852,6 +881,11 @@ void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen)
     default:
         printf("SOALEN = %d Not Supported (only SOALEN = 4, 8 supported)\n", soalen);
     }
+}
+
+void permuteFVec(InstVector& ivector, const FVec r, const FVec f, int dir)
+{
+	ivector.push_back(new PermuteFVec(r, f, dir));
 }
 
 #endif // PRECISION == 1

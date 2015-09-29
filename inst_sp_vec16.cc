@@ -498,6 +498,44 @@ private:
     const int imm;
 };
 
+class PermuteFVec : public Instruction
+{
+public:
+    PermuteFVec(const FVec& ret_, const FVec& a_, int dir_) : ret(ret_), a(a_), dir(dir_/2) {}
+    string serialize() const
+    {
+        ostringstream stream;
+#ifndef AVX512
+		if(dir < 2) {
+			string imm = (dir == 0 ? "_MM_SWIZ_REG_CDAB" : "_MM_SWIZ_REG_BADC");
+	        stream << ret.getName() << " = _mm512_swizzle_ps(" << a.getName() << ", "  << imm << ");";
+		}
+		else {
+			string imm = (dir == 2 ? "_MM_PERM_CDAB" : "_MM_PERM_BADC");
+			stream << ret.getName() << " = _mm512_permute4f128_ps(" << a.getName() << ", " << imm << ");" ;
+		}
+#else // AVX512 defined
+		if(dir < 2) {
+			string imm = (dir == 0 ? "0xB1" : "0x4E");
+	        stream << ret.getName() << " = _mm512_permute_ps(" << a.getName() << ", "  << imm << ");";
+		}
+		else {
+			string imm = (dir == 2 ? "0xB1" : "0x4E");
+			stream << ret.getName() << " = _mm512_shuffle_f32x4(" << a.getName() << ", "  << a.getName() << ", " << imm << ");" ;
+		}
+#endif // AVX512
+        return stream.str();
+    }
+    int numArithmeticInst() const
+    {
+        return 0;
+    }
+private:
+    const FVec ret;
+    const FVec a;
+    int dir;
+};
+
 #ifdef AVX512
 class Shuffle32x4 : public Instruction {
 public:
@@ -718,6 +756,11 @@ void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen)
     default:
         printf("SOALEN = %d Not Supported (only SOALEN = 4, 8 & 16 are supported)\n", soalen);
     }
+}
+
+void permuteFVec(InstVector& ivector, const FVec r, const FVec f, int dir)
+{
+	ivector.push_back(new PermuteFVec(r, f, dir));
 }
 
 #endif
