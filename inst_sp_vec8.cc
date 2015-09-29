@@ -386,7 +386,7 @@ public:
 	        stream << ret.getName() << " = _mm256_permute_ps(" << a.getName() << ", "  << imm << ");";
 		}
 		else if(dir == 2) {
-			stream << ret.getName() << " = _mm256_permute2f128_ps(" << a.getName() << ", "  << a.getName() << ", 0x11);" ;
+			stream << ret.getName() << " = _mm256_permute2f128_ps(" << a.getName() << ", "  << a.getName() << ", 0x01);" ;
 		}
 		else {
 			// nothing needs to be done for dir 3

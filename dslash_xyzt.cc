@@ -89,13 +89,13 @@ string beta_names[8] = {"coeff_s", "coeff_s", "coeff_s", "coeff_s", "coeff_s", "
 string beta_name("beta");
 string alpha_name("alpha");
 string outBase("oBase");
-//string outOffs("offs");
+string outOffs("ignore_offs");
 string gBase("gBase");
-//string gOffs("gOffs");
+string gOffs("ignore_gOffs");
 string chiBase("chiBase");
-//string chiOffs("offs");
+string chiOffs("ignore_chiOffs");
 string clBase("clBase");
-//string clOffs("gOffs");
+string clOffs("ignore_clOffs_gOffs");
 
 FVec b_spinor[2][3][2] = {
     { {FVec("b_S0_C0_RE"), FVec("b_S0_C0_IM")}, {FVec("b_S0_C1_RE"), FVec("b_S0_C1_IM")}, {FVec("b_S0_C2_RE"), FVec("b_S0_C2_IM")} },
@@ -191,7 +191,7 @@ void declare_misc(InstVector& ivector) {
     setZero(ivector, zero);
 }
 
-#if 0
+#if 1
 void generateFacePackL2Prefetches(InstVector& ivector, int dir)
 {
     PrefetchL2HalfSpinorDir(ivector, "outbuf", "hsprefdist", dir, true, 2 /* Ex*/);
@@ -316,7 +316,7 @@ void clover_term(InstVector& ivector, FVec in_spinor[4][3][2], bool face, string
 
     for(int block=0; block < 2; block++) {
         //PrefetchL1FullCloverBlockIn(ivector, clBase, clOffs, block);
-        LoadFullCloverBlock(ivector, clov_diag, clov_offdiag, clBase, clOffs, block);
+        LoadFullCloverBlock(ivector, clov_diag, clov_offdiag, clBase, string("ignore_clOffs"), block);
         for(int c1=0; c1 < 6; c1++) {
             int spin = 2*block+c1/3;
             int col = c1 % 3;
@@ -469,7 +469,9 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
                     project(ivector, basename + "[" + d_str.str() + "]", string("ignore_offset"), ops[d], false, mask, d, s);
 					ifStatement(ivector, "isBoundary[" + d_str.str() + "]");
 					{
-						for(int c = 0; c < 3; c++) permuteFVec(ivector, b_spinor[s][c], b_spinor[s][c], d);
+						for(int c = 0; c < 3; c++) 
+							for(int ri = 0; ri < 2; ri++) 
+								permuteFVec(ivector, b_spinor[s][c][ri], b_spinor[s][c][ri], d);
 					}
                     endScope(ivector);
 
@@ -539,7 +541,8 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
 				{
 	                for(int s = 0; s < 2; s++)
 						for(int c = 0; c < 3; c++) 
-							permuteFVec(ivector, b_spinor[s][c], b_spinor[s][c], d);
+							for(int ri = 0; ri < 2; ri++) 
+								permuteFVec(ivector, b_spinor[s][c][ri], b_spinor[s][c][ri], d);
 				}
                 endScope(ivector);
                 loadGaugeDir(ivector, d, compress12);

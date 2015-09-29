@@ -48,7 +48,56 @@ string serialize_data_types(bool compress12)
 }
 #endif
 
-void readFVecSpinor(InstVector& ivector, const FVec& ret, const string& base, const string& offset, int spin, int color, int reim, const string& mask)
+void readFVecSpecialized(InstVector& ivector, const FVec& ret, GatherAddress *a, string mask)
+{
+#if (SOALEN == VECLEN) && defined(USE_SHUFFLES)
+    loadFVec(ivector, ret, a->getAddr(0), mask);
+#else
+#ifndef USE_LDUNPK
+    gatherFVec(ivector, ret, a, mask);
+#else
+    initFVec(ivector, ret);
+
+    for(int i = 0; i < VECLEN; i += SOALEN) {
+        loadSOAFVec(ivector, ret, a->getAddr(i), i/SOALEN, SOALEN);
+    }
+
+#endif
+#endif
+}
+
+void writeFVecSpecialized(InstVector& ivector, const FVec& ret, GatherAddress *a, int isStreaming)
+{
+#if (SOALEN == VECLEN) && defined(USE_SHUFFLES)
+    storeFVec(ivector, ret, a->getAddr(0), isStreaming);
+#else
+#ifndef USE_PKST
+    scatterFVec(ivector, ret, a);
+#else
+
+    for(int i = 0; i < VECLEN; i += SOALEN) {
+        storeSOAFVec(ivector, ret, a->getAddr(i), i/SOALEN, SOALEN);
+    }
+
+#endif
+#endif
+}
+
+void readUFVec(InstVector& ivector, const FVec& ret, GatherAddress *a, int forward, const string &mask)
+{
+    ivector.push_back(new InitFVec(ret));
+
+    for(int i = 0; i < VECLEN; i += SOALEN) {
+        loadSplitSOAFVec(ivector, ret, a->getAddr(i), a->getAddr(i+(forward ? SOALEN-1 : 1)), i/SOALEN, SOALEN, forward);
+    }
+}
+
+void writeUFVec(InstVector& ivector, const FVec& ret, GatherAddress *a, int forward, const string &mask)
+{
+    for(int i = 0; i < VECLEN; i += SOALEN) {
+        storeSplitSOAFVec(ivector, ret, a->getAddr(i), a->getAddr(i+(forward ? SOALEN-1 : 1)), i/SOALEN, SOALEN, forward);
+    }
+}void readFVecSpinor(InstVector& ivector, const FVec& ret, const string& base, const string& offset, int spin, int color, int reim, const string& mask)
 {
     loadFVec(ivector, ret, new SpinorAddress(base,spin,color,reim,SpinorType), string(""));
 }
