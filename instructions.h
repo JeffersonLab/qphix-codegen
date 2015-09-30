@@ -593,7 +593,10 @@ void gatherPrefetchL2(InstVector& ivector, GatherAddress *a, int type = 0);
 
 void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen);
 
-void permuteFVec(InstVector& ivector, const FVec r, const FVec f, int dir);
+void permuteXYZTFVec(InstVector& ivector, const FVec r, const FVec f, int dir);
+
+int packXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir);
+int unpackXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir);
 
 inline void movFVec(InstVector& ivector, const FVec& ret, const FVec& a, string mask)
 {

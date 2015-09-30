@@ -498,10 +498,10 @@ private:
     const int imm;
 };
 
-class PermuteFVec : public Instruction
+class PermuteXYZTFVec : public Instruction
 {
 public:
-    PermuteFVec(const FVec& ret_, const FVec& a_, int dir_) : ret(ret_), a(a_), dir(dir_/2) {}
+    PermuteXYZTFVec(const FVec& ret_, const FVec& a_, int dir_) : ret(ret_), a(a_), dir(dir_/2) {}
     string serialize() const
     {
         ostringstream stream;
@@ -758,9 +758,36 @@ void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen)
     }
 }
 
-void permuteFVec(InstVector& ivector, const FVec r, const FVec f, int dir)
+void permuteXYZTFVec(InstVector& ivector, const FVec r, const FVec f, int dir)
 {
-	ivector.push_back(new PermuteFVec(r, f, dir));
+	ivector.push_back(new PermuteXYZTFVec(r, f, dir));
+}
+
+int packXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir) 
+{
+	int dim = dir/2;
+	int fb = dir % 2;
+	string masks[2][4] = {{"0x5555", "0xCCCC", "0x0F0F", "0x00FF"}, {"0xAAAA", "0x3333", "0xF0F0", "0xFF00"}};
+	ivector.push_back( new PackStoreFVec(r[0], rAddr, masks[fb][dim]));
+	ivector.push_back( new PackStoreFVec(r[0], lAddr, masks[1-fb][dim]));
+	
+	ivector.push_back( new PackStoreFVec(r[1], new AddressImm(rAddr, VECLEN/2), masks[fb][dim]));
+	ivector.push_back( new PackStoreFVec(r[1], new AddressImm(lAddr, VECLEN/2), masks[1-fb][dim]));
+
+	return VECLEN;
+}
+
+int unpackXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir) {
+	int dim = dir/2;
+	int fb = dir % 2;
+	string masks[2][4] = {{"0x5555", "0xCCCC", "0x0F0F", "0x00FF"}, {"0xAAAA", "0x3333", "0xF0F0", "0xFF00"}};
+	ivector.push_back( new LoadUnpackFVec(r[0], rAddr, masks[fb][dim]));
+	ivector.push_back( new LoadUnpackFVec(r[0], lAddr, masks[1-fb][dim]));
+	
+	ivector.push_back( new LoadUnpackFVec(r[1], new AddressImm(rAddr, VECLEN/2), masks[fb][dim]));
+	ivector.push_back( new LoadUnpackFVec(r[1], new AddressImm(lAddr, VECLEN/2), masks[1-fb][dim]));
+
+	return VECLEN;
 }
 
 #endif

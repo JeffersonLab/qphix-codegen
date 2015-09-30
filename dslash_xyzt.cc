@@ -578,15 +578,16 @@ void pack_face_vec(InstVector& ivector, FVec spinor[2][3][2], proj_ops proj[], i
         intToMask(ivector, mask, "mask");
     }
 
-    std::string out("outbuf");
-    PrefetchL1HalfSpinorDir(ivector, out, dir, true, 2 /*Exclusive*/);
+    std::string l_out("lBuf");
+    std::string r_out("rBuf");
+    //PrefetchL1HalfSpinorDir(ivector, out, dir, true, 2 /*Exclusive*/);
 
     // We need to reverse direction of projection for our neighbor
     int fb = (dir % 2 == 0 ? 1 : -1);
-    project(ivector, "xyBase","offs", proj[dir+fb], true, mask, dir);
+    project(ivector, "siBase","ignore_offs", proj[dir+fb], true, mask, dir);
 
     // This will write it to outbuf
-    PackHalfSpinor(ivector, spinor, out, dir, intMask);
+    PackHalfSpinor(ivector, spinor, l_out, r_out, dir);
 }
 
 // need inbuf pointer to half spinor
@@ -595,7 +596,8 @@ void pack_face_vec(InstVector& ivector, FVec spinor[2][3][2], proj_ops proj[], i
 void recons_add_face_vec(InstVector& ivector, bool compress12, bool adjMul, recons_ops rops[], int dir, int dim, bool clover)
 {
 
-    std::string in("inbuf");
+    std::string l_in("lBuf");
+    std::string r_in("rBuf");
     std::string mask, intMask;
 
     extern FVec out_spinor[4][3][2];
@@ -625,13 +627,13 @@ void recons_add_face_vec(InstVector& ivector, bool compress12, bool adjMul, reco
         outspinor = &out_spinor;
     }
 
-    PrefetchL1HalfSpinorDir(ivector, in, dir, false, 0 /*None*/);
+    //PrefetchL1HalfSpinorDir(ivector, in, dir, false, 0 /*None*/);
     // Gather in the partial result
-    PrefetchL1FullSpinorDirIn(ivector, outBase, outOffs, -1);
+    //PrefetchL1FullSpinorDirIn(ivector, outBase, outOffs, -1);
     LoadFullSpinor(ivector, out_spinor, outBase, outOffs, "");
 
     // load b-from inbuf
-    UnpackHalfSpinor(ivector, b_spinor, in, gauge_index, intMask);
+    UnpackHalfSpinor(ivector, b_spinor, l_in, r_in, gauge_index);
 
     loadGaugeDir(ivector, gauge_index, compress12);
     matMultVecT(ivector, adjMul);

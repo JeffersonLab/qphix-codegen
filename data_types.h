@@ -71,6 +71,8 @@ void StoreFullSpinor(InstVector& ivector, const FVec ret[4][3][2], const string&
 void StreamFullSpinor(InstVector& ivector, const FVec ret[4][3][2], const string& base, const string& offsets);
 void PackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& base, int dir, string mask);
 void UnpackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& base, int dir, string mask="");
+void PackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& lBase, const string& rBase, int dir);
+void UnpackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& lBase, const string& rBase, int dir);
 void LoadFullGaugeDir(InstVector& ivector, const FVec ret[3][3][2], const string& base, const string& offsets, int dir, bool compress12);
 void LoadFullNeighborGaugeDirLink(InstVector& ivector, const FVec ret[3][3][2], const string& base, const string& offsets, int dir, int link_dir, bool compress12);
 void LoadOrUnpackFullNeighborGaugeDirLinkBuffer(InstVector& ivector, const FVec ret[3][3][2], const string& base, const string& offsets, int dir, int link_dir, const string &inBuf, int bufLinkInd, bool compress12);
