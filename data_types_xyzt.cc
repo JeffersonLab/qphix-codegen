@@ -496,7 +496,7 @@ void PackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& 
 
 void PackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& lBase, const string& rBase, int dir)
 {
-	int lpackoffset = rpackoffset = 0;
+	int lpackoffset = 0, rpackoffset = 0;
     for(int spin=0; spin < 2; spin++) {
         for(int col=0; col < 3; col++) {
 			int rsz = packXYZTFVec(ivector, ret[spin][col], new AddressImm(new GenericAddress(lBase, SpinorType), lpackoffset),
@@ -554,13 +554,13 @@ void UnpackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string
 
 void UnpackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& lBase, const string& rBase, int dir)
 {
-	int lunpackoffset = runpackoffset = 0;
+	int lunpackoffset = 0, runpackoffset = 0;
     for(int spin=0; spin < 2; spin++) {
         for(int col=0; col < 3; col++) {
 			int rsz = unpackXYZTFVec(ivector, ret[spin][col], new AddressImm(new GenericAddress(lBase, SpinorType), lunpackoffset),
 				new AddressImm(new GenericAddress(rBase, SpinorType), runpackoffset), dir);
-			rpackoffset += rsz;
-			if(rsz == VECLEN) lpackoffset += rsz;
+			runpackoffset += rsz;
+			if(rsz == VECLEN) lunpackoffset += rsz;
 		}
 	}
 }

@@ -471,7 +471,7 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
 					{
 						for(int c = 0; c < 3; c++) 
 							for(int ri = 0; ri < 2; ri++) 
-								permuteFVec(ivector, b_spinor[s][c][ri], b_spinor[s][c][ri], d);
+								permuteXYZTFVec(ivector, b_spinor[s][c][ri], b_spinor[s][c][ri], d);
 					}
                     endScope(ivector);
 
@@ -542,7 +542,7 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
 	                for(int s = 0; s < 2; s++)
 						for(int c = 0; c < 3; c++) 
 							for(int ri = 0; ri < 2; ri++) 
-								permuteFVec(ivector, b_spinor[s][c][ri], b_spinor[s][c][ri], d);
+								permuteXYZTFVec(ivector, b_spinor[s][c][ri], b_spinor[s][c][ri], d);
 				}
                 endScope(ivector);
                 loadGaugeDir(ivector, d, compress12);
@@ -851,7 +851,7 @@ int main(void)
 
                 // Generate instructions
                 dslash_achimbdpsi_body(ivector,compress12,clover,isPlus);
-                mergeIvectorWithL2Prefetches(ivector, l2prefs);
+                //mergeIvectorWithL2Prefetches(ivector, l2prefs);
                 dumpIVector(ivector,filename.str());
 
                 for(int dir = 0; dir < 2; dir++) {
@@ -863,7 +863,7 @@ int main(void)
                         recons_add_face_from_dir_dim_vec(ivector, compress12,isPlus, dir, dim, clover);
                         l2prefs.resize(0);
                         generateFaceUnpackL2Prefetches(l2prefs, 2*dim+dir, compress12, clover);
-                        mergeIvectorWithL2Prefetches(ivector, l2prefs);
+                        //mergeIvectorWithL2Prefetches(ivector, l2prefs);
                         dumpIVector(ivector,filename.str());
                     }
                 }
@@ -879,7 +879,7 @@ int main(void)
                 generateFacePackL2Prefetches(l2prefs, 2*dim+dir);
                 ivector.resize(0);
                 pack_face_to_dir_dim_vec(ivector,isPlus,dir,dim);
-                mergeIvectorWithL2Prefetches(ivector, l2prefs);
+                //mergeIvectorWithL2Prefetches(ivector, l2prefs);
                 dumpIVector(ivector,filename.str());
             }
         }
