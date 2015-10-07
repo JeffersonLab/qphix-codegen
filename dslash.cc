@@ -8,6 +8,7 @@
 using namespace std;
 
 #include "dslash_common.h"
+#include "data_types.h"
 
 typedef struct {
     const char *name;

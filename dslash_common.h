@@ -12,7 +12,7 @@
 using namespace std;
 
 #include "instructions.h"
-#include "data_types.h"
+//#include "data_types.h"
 
 
 extern std::string ARCH_NAME;

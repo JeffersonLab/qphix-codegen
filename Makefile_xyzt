@@ -2,7 +2,7 @@
 DRIVER=dslash_xyzt
 milc=0
 ifeq ($(milc),1)
-DRIVER=ks_dslash
+DRIVER=ks_dslash_xyzt
 endif
 
 mode=avx
@@ -100,7 +100,7 @@ DEFS += $(strip $(foreach var, $(yesnolist), $(if $(filter 1, $($(var))), -D$(va
 DEFS += $(strip $(foreach var, $(deflist), $(if $($(var)), -D$(var)=$($(var)))))
 
 SOURCES = data_types_xyzt.cc $(DRIVER).cc dslash_common.cc inst_dp_vec8.cc inst_sp_vec16.cc inst_dp_vec4.cc inst_sp_vec8.cc inst_sp_vec4.cc inst_dp_vec2.cc inst_scalar.cc
-HEADERS = address_types.h  data_types.h  dslash_common.h  instructions.h Makefile $(CONFFILE)
+HEADERS = address_types.h  data_types_xyzt.h  dslash_common.h  instructions.h Makefile $(CONFFILE)
 
 all: codegen
 

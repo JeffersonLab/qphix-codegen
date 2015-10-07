@@ -8,6 +8,7 @@
 using namespace std;
 
 #include "dslash_common.h"
+#include "data_types_xyzt.h"
 
 typedef struct {
     const char *name;
@@ -77,25 +78,15 @@ recons_ops rec_minus_mbeta_ops[] = {
 string dirname[2] = {"back", "forw"};
 string dimchar[4] = {"X", "Y", "Z", "T"};
 
-// Defines which dimensions are involved in SIMD blocking
-// Currently just X and Y
-bool requireAllOneCheck[4] = {false, false, false, false};
-
 string basename = "neighs";
-//string basenames[8] = {"iBase[0]", "iBase[1]", "xyBase", "xyBase", "zbBase", "zfBase", "tbBase", "tfBase"};
-//string offsnames[8] = {"xbOffs", "xfOffs", "ybOffs", "yfOffs", "offs",   "offs",   "offs",   "offs"  };
 string beta_names[8] = {"coeff_s", "coeff_s", "coeff_s", "coeff_s", "coeff_s", "coeff_s", "coeff_t_b", "coeff_t_f"};
 
 string beta_name("beta");
 string alpha_name("alpha");
 string outBase("oBase");
-string outOffs("ignore_offs");
 string gBase("gBase");
-string gOffs("ignore_gOffs");
 string chiBase("chiBase");
-string chiOffs("ignore_chiOffs");
 string clBase("clBase");
-string clOffs("ignore_clOffs_gOffs");
 
 FVec b_spinor[2][3][2] = {
     { {FVec("b_S0_C0_RE"), FVec("b_S0_C0_IM")}, {FVec("b_S0_C1_RE"), FVec("b_S0_C1_IM")}, {FVec("b_S0_C2_RE"), FVec("b_S0_C2_IM")} },
@@ -195,79 +186,80 @@ void declare_misc(InstVector& ivector) {
 void generateFacePackL2Prefetches(InstVector& ivector, int dir)
 {
     PrefetchL2HalfSpinorDir(ivector, "outbuf", "hsprefdist", dir, true, 2 /* Ex*/);
-    PrefetchL2FullSpinorDirIn(ivector, "xyBase", "offs", "si_prefdist");
+    PrefetchL2FullSpinorDirIn(ivector, "siBase", "si_prefdist");
 }
 
 void generateFaceUnpackL2Prefetches(InstVector& ivector, int dir, bool compress12, bool clover)
 {
     PrefetchL2HalfSpinorDir(ivector, "inbuf", "hsprefdist", dir, false, 0 /* None*/);
-    PrefetchL2FullGaugeDirIn(ivector, "gBase", "gOffs", dir, "gprefdist", compress12);
+    PrefetchL2FullGaugeDirIn(ivector, "gBase", dir, "gprefdist", compress12);
 
     if(clover)	{
-        PrefetchL2FullCloverIn(ivector, "clBase", "gOffs", "clprefdist");
+        PrefetchL2FullCloverIn(ivector, "clBase", "clprefdist");
     }
 
-    PrefetchL2FullSpinorDirIn(ivector, outBase, "offs", "soprefdist");
+    PrefetchL2FullSpinorDirIn(ivector, outBase, "soprefdist");
 }
 
 
 // Generate all L2 prefetches
 void generateL2Prefetches(InstVector& ivector, bool compress12, bool chi, bool clover)
 {
-    PrefetchL2FullSpinorDirIn(ivector, "xyBase", "pfyOffs", "siprefdist1");
+    PrefetchL2FullSpinorDirIn(ivector, "siBase", "siprefdist1");
     //PrefetchL2FullSpinorDirIn(ivector, "pfBase1", "offs", "siprefdist1");
-    PrefetchL2FullSpinorDirIn(ivector, "pfBase2", "offs", "siprefdist2");
-    PrefetchL2FullSpinorDirIn(ivector, "pfBase3", "offs", "siprefdist3");
-    PrefetchL2FullSpinorDirIn(ivector, "pfBase4", "offs", "siprefdist4");
+    PrefetchL2FullSpinorDirIn(ivector, "pfBase2", "siprefdist2");
+    PrefetchL2FullSpinorDirIn(ivector, "pfBase3", "siprefdist3");
+    PrefetchL2FullSpinorDirIn(ivector, "pfBase4", "siprefdist4");
 
     if(clover)	{
-        PrefetchL2FullCloverIn(ivector, "clBase", "gOffs", "clprefdist");
+        PrefetchL2FullCloverIn(ivector, "clBase", "clprefdist");
     }
 
     if(chi) {
-        PrefetchL2FullSpinorDirIn(ivector, "pfBaseChi", "offs", "chiprefdist");
+        PrefetchL2FullSpinorDirIn(ivector, "pfBaseChi", "chiprefdist");
     }
 
-    PrefetchL2FullGaugeIn(ivector, "gBase", "gOffs", "gprefdist", compress12);
-    PrefetchL2FullSpinorOut(ivector, outBase, "offs", "siprefdist4");
+    PrefetchL2FullGaugeIn(ivector, "gBase", "gprefdist", compress12);
+    PrefetchL2FullSpinorOut(ivector, outBase, "siprefdist4");
 }
 #endif
 
 // offset and isFace not used
-void project(InstVector& ivector, string base, string offset, proj_ops& ops, bool isFace, string mask, int dir)
+void project(InstVector& ivector, string base, proj_ops& ops, int dir)
 {
     string tmask("");
     //PrefetchL1FullSpinorDirIn(ivector, base, offset, dir);
     for(int s = 0; s < 2; s++) {
         for(int c = 0; c < 3; c++) {
-            LoadSpinorElement(ivector, psi[0][RE], base, offset, ops.s[s][0], c, RE, isFace,  mask, dir);
-            LoadSpinorElement(ivector, psi[0][IM], base, offset, ops.s[s][0], c, IM, isFace,  mask, dir);
-            LoadSpinorElement(ivector, psi[1][RE], base, offset, ops.s[s][1], c, RE, isFace,  mask, dir);
-            LoadSpinorElement(ivector, psi[1][IM], base, offset, ops.s[s][1], c, IM, isFace,  mask, dir);
+            LoadSpinorElement(ivector, psi[0][RE], base, ops.s[s][0], c, RE, dir);
+            LoadSpinorElement(ivector, psi[0][IM], base, ops.s[s][0], c, IM, dir);
+            LoadSpinorElement(ivector, psi[1][RE], base, ops.s[s][1], c, RE, dir);
+            LoadSpinorElement(ivector, psi[1][IM], base, ops.s[s][1], c, IM, dir);
 
-            ops.CVecFunc[s](ivector, b_spinor[s][c], psi[0], psi[1], /*mask*/ tmask); // Not using mask here
+            ops.CVecFunc[s](ivector, b_spinor[s][c], psi[0], psi[1], tmask); // Not using mask here
         }
     }
 }
 
 // Serial Spin version
 // offset and isFace not used
-void project(InstVector& ivector, string base, string offset, proj_ops& ops, bool isFace, string mask, int dir, int s)
+void project(InstVector& ivector, string base, proj_ops& ops, int dir, int s)
 {
     string tmask("");
     //if(s==0) PrefetchL1FullSpinorDirIn(ivector, base, offset, dir);
     for(int c = 0; c < 3; c++) {
-        LoadSpinorElement(ivector, psi[0][RE], base, offset, ops.s[s][0], c, RE, isFace,  mask, dir);
-        LoadSpinorElement(ivector, psi[0][IM], base, offset, ops.s[s][0], c, IM, isFace,  mask, dir);
-        LoadSpinorElement(ivector, psi[1][RE], base, offset, ops.s[s][1], c, RE, isFace,  mask, dir);
-        LoadSpinorElement(ivector, psi[1][IM], base, offset, ops.s[s][1], c, IM, isFace,  mask, dir);
+        LoadSpinorElement(ivector, psi[0][RE], base, ops.s[s][0], c, RE, dir);
+        LoadSpinorElement(ivector, psi[0][IM], base, ops.s[s][0], c, IM, dir);
+        LoadSpinorElement(ivector, psi[1][RE], base, ops.s[s][1], c, RE, dir);
+        LoadSpinorElement(ivector, psi[1][IM], base, ops.s[s][1], c, IM, dir);
 
         ops.CVecFunc[s](ivector, b_spinor[s][c], psi[0], psi[1], /*mask*/ tmask); // Not using mask here
     }
 }
 
-void recons_add(InstVector& ivector, recons_ops& ops, FVec outspinor[4][3][2], string &mask)
+void recons_add(InstVector& ivector, recons_ops& ops, FVec outspinor[4][3][2])
 {
+	string mask;
     for(int s=0; s < 2; s++) {
         for(int c = 0; c < 3; c++) {
             ops.CVecFuncTop2(ivector, outspinor[s][c], outspinor[s][c], ub_spinor[s][c], beta_vec, mask);
@@ -286,8 +278,9 @@ void recons_add(InstVector& ivector, recons_ops& ops, FVec outspinor[4][3][2], s
 }
 
 // Serial Spin version
-void recons_add(InstVector& ivector, recons_ops& ops, FVec outspinor[4][3][2], string &mask, int s)
+void recons_add(InstVector& ivector, recons_ops& ops, FVec outspinor[4][3][2], int s)
 {
+	string mask;
     for(int c = 0; c < 3; c++) {
         ops.CVecFuncTop2(ivector, outspinor[s][c], outspinor[s][c], ub_spinor[s][c], beta_vec, mask);
     }
@@ -310,27 +303,20 @@ void zeroResult(InstVector& ivector, FVec *outspinor)
     }
 }
 
-void clover_term(InstVector& ivector, FVec in_spinor[4][3][2], bool face, string _mask="")
+void clover_term(InstVector& ivector, FVec in_spinor[4][3][2], bool face)
 {
     FVec clout_tmp[2] = {tmp_1_re, tmp_1_im};
 
     for(int block=0; block < 2; block++) {
         //PrefetchL1FullCloverBlockIn(ivector, clBase, clOffs, block);
-        LoadFullCloverBlock(ivector, clov_diag, clov_offdiag, clBase, string("ignore_clOffs"), block);
+        LoadFullCloverBlock(ivector, clov_diag, clov_offdiag, clBase, block);
         for(int c1=0; c1 < 6; c1++) {
             int spin = 2*block+c1/3;
             int col = c1 % 3;
             bool acc = face;
-            string mask = _mask;
+            string mask;
             FVec *clout = out_spinor[spin][col];
             FVec *clin  = in_spinor[spin][col];
-#ifdef NO_HW_MASKING
-            if(_mask != "") {
-                acc = false;
-                clout = clout_tmp;
-                mask = "";
-            }
-#endif
             if( acc ) {
                 fmaddFVec( ivector, clout[RE], clov_diag[c1], clin[RE], clout[RE], mask);
                 fmaddFVec( ivector, clout[IM], clov_diag[c1], clin[IM], clout[IM], mask);
@@ -350,14 +336,6 @@ void clover_term(InstVector& ivector, FVec in_spinor[4][3][2], bool face, string
                     fmaddCVec(ivector, clout, clov_offdiag[od], in_spinor[2*block+c2/3][c2%3], clout, mask);
                 }
             }
-#ifdef NO_HW_MASKING
-            if(_mask != "") {
-                if(face)
-                    addCVec(ivector, out_spinor[spin][col], clout, clout_spinor[block][c1], _mask);
-                else
-                    movCVec(ivector, out_spinor[spin][col], clout, _mask);
-            }
-#endif
         }
     }
 }
@@ -369,8 +347,8 @@ void achiResult(InstVector& ivector, bool clover)
     if(!clover) {
         for(int col=0; col < 3; col++) {
             for(int spin=0; spin < 4; spin++) {
-                LoadSpinorElement(ivector, tmp_1_re, chiBase, chiOffs, spin, col, RE, false, "");
-                LoadSpinorElement(ivector, tmp_1_im, chiBase, chiOffs, spin, col, IM, false, "");
+                LoadSpinorElement(ivector, tmp_1_re, chiBase, spin, col, RE);
+                LoadSpinorElement(ivector, tmp_1_im, chiBase, spin, col, IM);
                 mulFVec(ivector, out_spinor[spin][col][RE], alpha_vec, tmp_1_re);
                 mulFVec(ivector, out_spinor[spin][col][IM], alpha_vec, tmp_1_im);
             }
@@ -379,8 +357,8 @@ void achiResult(InstVector& ivector, bool clover)
     else {
         for(int col=0; col < 3; col++) {
             for(int spin=0; spin < 4; spin++) {
-                LoadSpinorElement(ivector, chi_spinor[spin][col][RE], chiBase, chiOffs, spin, col, RE, false, "");
-                LoadSpinorElement(ivector, chi_spinor[spin][col][IM], chiBase, chiOffs, spin, col, IM, false, "");
+                LoadSpinorElement(ivector, chi_spinor[spin][col][RE], chiBase, spin, col, RE);
+                LoadSpinorElement(ivector, chi_spinor[spin][col][IM], chiBase, spin, col, IM);
             }
         }
         // Apply clover term, and store result in out spinor.
@@ -393,8 +371,8 @@ void achiResult(InstVector& ivector, bool clover)
 void loadGaugeDir(InstVector& ivector, int dir, bool compress12) {
     string mask;
 
-    //PrefetchL1FullGaugeDirIn(ivector, gBase, gOffs, dir, compress12);
-    LoadFullGaugeDir(ivector, u_gauge, gBase, gOffs, dir, compress12);
+    //PrefetchL1FullGaugeDirIn(ivector, gBase, dir, compress12);
+    LoadFullGaugeDir(ivector, u_gauge, gBase, dir, compress12);
 
     decompressGauge(ivector, u_gauge, compress12, mask);
 }
@@ -420,7 +398,6 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
             int d = dim * 2 + dir;
             stringstream d_str;
             d_str << d;
-            string mask;
             bool adjMul;
             recons_ops rec_op;
 
@@ -438,35 +415,8 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
                 declareFVecFromFVec(ivector, beta_vec);
                 loadBroadcastScalar(ivector, beta_vec, beta_names[d], SpinorType);
 
-#ifdef NO_HW_MASKING
-
-                if(requireAllOneCheck[dim]) {
-                    ifAllOneStatement(ivector,"accumulate[" + d_str.str() + "]");
-                    {
-                        for(int s = 0; s < 2; s++) {
-                            project(ivector, basename + "[" + d_str.str() + "]", string("ignore_offset"), ops[d], false, mask, d, s);
-
-                            if(s==0) {
-                                loadGaugeDir(ivector, d, compress12);
-                            }
-
-                            matMultVecT(ivector, adjMul, s);
-                            recons_add(ivector, rec_op, outspinor, mask, s);
-                        }
-                    }
-                    elseStatement(ivector);
-                }
-
-#endif
-
-                if(requireAllOneCheck[dim]) {
-                    mask = "accMask";
-                    declareMask(ivector, mask);
-                    intToMask(ivector, mask, "accumulate[" + d_str.str() + "]");
-                }
-
                 for(int s = 0; s < 2; s++) {
-                    project(ivector, basename + "[" + d_str.str() + "]", string("ignore_offset"), ops[d], false, mask, d, s);
+                    project(ivector, basename + "[" + d_str.str() + "]", ops[d], d, s);
 					ifStatement(ivector, "isBoundary[" + d_str.str() + "]");
 					{
 						for(int c = 0; c < 3; c++) 
@@ -480,16 +430,9 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
                     }
 
                     matMultVecT(ivector, adjMul, s);
-                    recons_add(ivector, rec_op, outspinor, mask, s);
+                    recons_add(ivector, rec_op, outspinor, s);
                 }
 
-#ifdef NO_HW_MASKING
-
-                if(requireAllOneCheck[dim]) {
-                    endScope(ivector);
-                }
-
-#endif
             }
             endScope(ivector);
         }
@@ -503,7 +446,6 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
             int d = dim * 2 + dir;
             stringstream d_str;
             d_str << d;
-            string mask;
             bool adjMul;
             recons_ops rec_op;
 
@@ -515,28 +457,7 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
                 declareFVecFromFVec(ivector, beta_vec);
                 loadBroadcastScalar(ivector, beta_vec, beta_names[d], SpinorType);
 
-#ifdef NO_HW_MASKING
-
-                if(requireAllOneCheck[dim]) {
-                    ifAllOneStatement(ivector,"accumulate[" + d_str.str() + "]");
-                    {
-                        project(ivector, basename + "[" + d_str.str() + "]", string("ignore_offset"), ops[d], false, mask, d);
-                        loadGaugeDir(ivector, d, compress12);
-                        matMultVecT(ivector, adjMul);
-                        recons_add(ivector, rec_op, outspinor, mask);
-                    }
-                    elseStatement(ivector);
-                }
-
-#endif
-
-                if(requireAllOneCheck[dim]) {
-                    mask = "accMask";
-                    declareMask(ivector, mask);
-                    intToMask(ivector, mask, "accumulate[" + d_str.str() + "]");
-                }
-
-                project(ivector, basename + "[" + d_str.str() + "]", string("ignore_offset"), ops[d], false, mask, d);
+                project(ivector, basename + "[" + d_str.str() + "]", ops[d], d);
 				ifStatement(ivector, "isBoundary[" + d_str.str() + "]");
 				{
 	                for(int s = 0; s < 2; s++)
@@ -547,14 +468,7 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
                 endScope(ivector);
                 loadGaugeDir(ivector, d, compress12);
                 matMultVecT(ivector, adjMul);
-                recons_add(ivector, rec_op, outspinor, mask);
-#ifdef NO_HW_MASKING
-
-                if(requireAllOneCheck[dim]) {
-                    endScope(ivector);
-                }
-
-#endif
+                recons_add(ivector, rec_op, outspinor);
             }
             endScope(ivector);
         }
@@ -564,27 +478,17 @@ void dslash_body(InstVector& ivector, bool compress12, proj_ops *ops, recons_ops
 
 
 
-// need xyBase, and offs to specify input spinor
+// need siBase to specify input spinor
 // need outbuf for output half spinor
 void pack_face_vec(InstVector& ivector, FVec spinor[2][3][2], proj_ops proj[], int dir)
 {
-    std::string intMask, mask;
-
-    // Check if this dir has mask argument
-    if(requireAllOneCheck[dir/2]) {
-        intMask = "mask";
-        mask = "accMask";
-        declareMask(ivector, mask);
-        intToMask(ivector, mask, "mask");
-    }
-
     std::string l_out("lBuf");
     std::string r_out("rBuf");
     //PrefetchL1HalfSpinorDir(ivector, out, dir, true, 2 /*Exclusive*/);
 
     // We need to reverse direction of projection for our neighbor
     int fb = (dir % 2 == 0 ? 1 : -1);
-    project(ivector, "siBase","ignore_offs", proj[dir+fb], true, mask, dir);
+    project(ivector, "siBase", proj[dir+fb], dir);
 
     // This will write it to outbuf
     PackHalfSpinor(ivector, spinor, l_out, r_out, dir);
@@ -598,21 +502,12 @@ void recons_add_face_vec(InstVector& ivector, bool compress12, bool adjMul, reco
 
     std::string l_in("lBuf");
     std::string r_in("rBuf");
-    std::string mask, intMask;
 
     extern FVec out_spinor[4][3][2];
     extern FVec dout_spinor[4][3][2];
     extern FVec b_spinor[2][3][2];
 
     int gauge_index = dim * 2 + dir;
-
-    // Check if this dir has mask argument
-    if(requireAllOneCheck[dim]) {
-        intMask = "mask";
-        mask = "accMask";
-        declareMask(ivector, mask);
-        intToMask(ivector, mask, "mask");
-    }
 
     declareFVecFromFVec(ivector, beta_vec);
     loadBroadcastScalar(ivector, beta_vec, beta_name, SpinorType);
@@ -630,21 +525,21 @@ void recons_add_face_vec(InstVector& ivector, bool compress12, bool adjMul, reco
     //PrefetchL1HalfSpinorDir(ivector, in, dir, false, 0 /*None*/);
     // Gather in the partial result
     //PrefetchL1FullSpinorDirIn(ivector, outBase, outOffs, -1);
-    LoadFullSpinor(ivector, out_spinor, outBase, outOffs, "");
+    LoadFullSpinor(ivector, out_spinor, outBase);
 
     // load b-from inbuf
     UnpackHalfSpinor(ivector, b_spinor, l_in, r_in, gauge_index);
 
     loadGaugeDir(ivector, gauge_index, compress12);
     matMultVecT(ivector, adjMul);
-    recons_add(ivector, rops[dim], *outspinor, mask);
+    recons_add(ivector, rops[dim], *outspinor);
 
     if(clover) {
         clover_term(ivector, *outspinor, true);
     }
 
     // scatter it out
-    StoreFullSpinor(ivector, out_spinor, outBase, outOffs);
+    StoreFullSpinor(ivector, out_spinor, outBase);
 }
 
 
@@ -707,7 +602,7 @@ void dslash_plain_body(InstVector& ivector, bool compress12, bool clover, bool i
     if(clover) clover_term(ivector, outspinor, false);
 
     // Store
-    StreamFullSpinor(ivector, out_spinor, outBase, outOffs);
+    StreamFullSpinor(ivector, out_spinor, outBase);
 }
 
 // ***** ------- a chi - b D psi versions
@@ -751,7 +646,7 @@ void dslash_achimbdpsi_body(InstVector& ivector, bool compress12, bool clover, b
     dslash_body(ivector, compress12, p_ops, rec_ops_bw, rec_ops_fw, out_spinor);
 
     // Store
-    StreamFullSpinor(ivector, out_spinor, outBase, outOffs);
+    StreamFullSpinor(ivector, out_spinor, outBase);
 }
 
 void pack_face_to_dir_dim_vec(InstVector& ivector, bool isPlus, int dir, int dim)
@@ -795,21 +690,6 @@ int main(void)
     const string SpinorTypeName = getTypeName(sizeof(SpinorBaseType));
     const string GaugeTypeName = getTypeName(sizeof(GaugeBaseType));
     const string CloverTypeName = getTypeName(sizeof(CloverBaseType));
-
-#if 0
-	if(VECLEN > 1) requireAllOneCheck[0] = true;
-    if(VECLEN > 2) requireAllOneCheck[1] = true;
-    if(VECLEN > 4) requireAllOneCheck[2] = true;
-    if(VECLEN > 8) requireAllOneCheck[3] = true;
-#endif
-
-#ifdef NO_MASKS
-
-    for(int i = 0; i < 4; i++) {
-        requireAllOneCheck[i] = false;
-    }
-
-#endif
 
     for(int isign=-1; isign<=1; isign+=2) {
         bool isPlus = (isign == 1 ? true : false);
@@ -884,12 +764,6 @@ int main(void)
             }
         }
     }
-
-    //data_types<float,VECLEN,SOALEN,true>::Gauge cmped;
-    //data_types<float,VECLEN,SOALEN,false>::Gauge uncmped;
-
-    //cout << "Compressed Gauge size is " << sizeof(cmped) << endl;
-    //cout << "Uncompressed Gauge size is " << sizeof(uncmped) << endl;
 
     return 0;
 }
