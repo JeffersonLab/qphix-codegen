@@ -79,9 +79,9 @@ void StoreFullSpinor(InstVector& ivector, const FVec ret[4][3][2], const string&
     }
 }
 
-void StreamFullSpinor(InstVector& ivector, const FVec ret[4][3][2], const string& base, const string& offsets)
+void StreamFullSpinor(InstVector& ivector, const FVec ret[4][3][2], const string& base)
 {
-    StoreFullSpinor(ivector, ret, base, offsets, 1);
+    StoreFullSpinor(ivector, ret, base, 1);
 }
 
 void PackHalfSpinor(InstVector& ivector, const FVec ret[2][3][2], const string& lBase, const string& rBase, int dir)

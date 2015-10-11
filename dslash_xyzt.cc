@@ -185,13 +185,13 @@ void declare_misc(InstVector& ivector) {
 #if 1
 void generateFacePackL2Prefetches(InstVector& ivector, int dir)
 {
-    PrefetchL2HalfSpinorDir(ivector, "outbuf", "hsprefdist", dir, true, 2 /* Ex*/);
+    PrefetchL2HalfSpinorDir(ivector, "lBuf", "rBuf", "hsprefdist", dir, true, 2 /* Ex*/);
     PrefetchL2FullSpinorDirIn(ivector, "siBase", "si_prefdist");
 }
 
 void generateFaceUnpackL2Prefetches(InstVector& ivector, int dir, bool compress12, bool clover)
 {
-    PrefetchL2HalfSpinorDir(ivector, "inbuf", "hsprefdist", dir, false, 0 /* None*/);
+    PrefetchL2HalfSpinorDir(ivector, "lBuf", "rBuf", "hsprefdist", dir, false, 0 /* None*/);
     PrefetchL2FullGaugeDirIn(ivector, "gBase", dir, "gprefdist", compress12);
 
     if(clover)	{

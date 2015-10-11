@@ -174,7 +174,7 @@ void generateLoadLongLinkFaceUnpackL2Prefetches(InstVector& ivector, bool compre
 
 void project(InstVector& ivector, string base, int dir)
 {
-    PrefetchL1FullKSDirIn(ivector, base, offset, dir);
+    //PrefetchL1FullKSDirIn(ivector, base, dir);
     for(int c = 0; c < 3; c++) {
         LoadKSElement(ivector, b_KS[c][RE], base, c, RE, dir);
         LoadKSElement(ivector, b_KS[c][IM], base, c, IM, dir);
@@ -236,10 +236,10 @@ void reconstructGaugeSign(InstVector& ivector, FVec u_mat[3][3][2], int dim, int
     }
 }
 
-void loadGaugeDir(InstVector& ivector, string gBase, string gOffs, int dir, bool compress12) {
+void loadGaugeDir(InstVector& ivector, string gBase, int dir, bool compress12) {
     string mask;
 
-    PrefetchL1FullGaugeDirIn(ivector, gBase, dir, compress12);
+    //PrefetchL1FullGaugeDirIn(ivector, gBase, dir, compress12);
     LoadFullGaugeDir(ivector, u_gauge, gBase, dir, compress12);
 
     decompressGauge(ivector, u_gauge, compress12, mask);
@@ -400,7 +400,7 @@ void plain_dslash_face_unpack_from_dir_dim_vec(InstVector& ivector, bool compres
     LoadFullKS(ivector, out_KS, outBase);
 
     // load b-from inbuf
-    UnpackKSSpinor(ivector, b_KS, l_in, l_out, gauge_index);
+    UnpackKSSpinor(ivector, b_KS, l_in, r_in, gauge_index);
 
     loadGaugeDir(ivector, gBase, gauge_index, compress12);
     matMultVec(ivector, adjMul);
@@ -590,7 +590,7 @@ int main(void)
 
         std::ostringstream filename;
         // Dslash
-        filename << "./"<<ARCH_NAME<<"/" << "ks_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        filename << "./"<<ARCH_NAME<<"/" << "ks_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<< num_components;
         cout << "GENERATING " << filename.str() << endl;
         l2prefs.resize(0);
         ivector.resize(0);
@@ -602,7 +602,7 @@ int main(void)
         filename.str("");
         filename.clear();
         // Long Dslash
-        filename << "./"<<ARCH_NAME<<"/" << "ks_long_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        filename << "./"<<ARCH_NAME<<"/" << "ks_long_dslash_body_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<< num_components;
         cout << "GENERATING " << filename.str() << endl;
         l2prefs.resize(0);
         ivector.resize(0);
@@ -614,7 +614,7 @@ int main(void)
         filename.str("");
         filename.clear();
         // rephase
-        filename << "./"<<ARCH_NAME<<"/" << "ks_rephase_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        filename << "./"<<ARCH_NAME<<"/" << "ks_rephase_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<< num_components;
         cout << "GENERATING " << filename.str() << endl;
         l2prefs.resize(0);
         ivector.resize(0);
@@ -626,7 +626,7 @@ int main(void)
 		filename.str("");
         filename.clear();
         // load long links
-        filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+        filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_body_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<< num_components;
         cout << "GENERATING " << filename.str() << endl;
         l2prefs.resize(0);
         ivector.resize(0);
@@ -641,7 +641,7 @@ int main(void)
             for(int dir = 0; dir < 2; dir++) {
                 filename.str("");
                 filename.clear();
-                filename << "./"<<ARCH_NAME<<"/ks_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<<num_components;
+                filename << "./"<<ARCH_NAME<<"/ks_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<<num_components;
                 cout << "GENERATING " << filename.str() << endl;
                 l2prefs.resize(0);
                 ivector.resize(0);
@@ -653,7 +653,7 @@ int main(void)
                 filename.str("");
                 filename.clear();
                 // long dslash
-                filename << "./"<<ARCH_NAME<<"/ks_long_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<<num_components;
+                filename << "./"<<ARCH_NAME<<"/ks_long_dslash_face_unpack_from_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<<num_components;
                 cout << "GENERATING " << filename.str() << endl;
                 l2prefs.resize(0);
                 ivector.resize(0);
@@ -667,7 +667,7 @@ int main(void)
             filename.str("");
             filename.clear();
             // load long links
-            filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_pack_to_forw_"<<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+            filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_pack_to_forw_"<<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<< num_components;
             cout << "GENERATING " << filename.str() << endl;
             l2prefs.resize(0);
             ivector.resize(0);
@@ -679,7 +679,7 @@ int main(void)
             filename.str("");
             filename.clear();
             // load long links
-            filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_unpack_from_forw_" <<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<SOALEN<<"_"<< num_components;
+            filename << "./"<<ARCH_NAME<<"/" << "ks_load_longlinks_face_unpack_from_forw_" <<dimchar[dim]<<"_" << GaugeTypeName << "_v"<< VECLEN <<"_s"<<"_"<< num_components;
             cout << "GENERATING " << filename.str() << endl;
             l2prefs.resize(0);
             ivector.resize(0);
@@ -694,7 +694,7 @@ int main(void)
     for(int dir = 0; dir < 2; dir++) {
         for(int dim = 0; dim < 4; dim++) {
             std::ostringstream filename;
-            filename << "./"<<ARCH_NAME<<"/ks_dslash_face_pack_to_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_v"<< VECLEN <<"_s"<<SOALEN;
+            filename << "./"<<ARCH_NAME<<"/ks_dslash_face_pack_to_"<<dirname[dir]<<"_"<<dimchar[dim]<<"_" << SpinorTypeName << "_v"<< VECLEN <<"_s";
             cout << "GENERATING " << filename.str() << endl;
             l2prefs.resize(0);
             ivector.resize(0);
