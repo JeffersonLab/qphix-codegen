@@ -767,7 +767,7 @@ int packXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, cons
 {
 	int dim = dir/2;
 	int fb = dir % 2;
-	string masks[2][4] = {{"0x5555", "0xCCCC", "0x0F0F", "0x00FF"}, {"0xAAAA", "0x3333", "0xF0F0", "0xFF00"}};
+	string masks[2][4] = {{"0x5555", "0x3333", "0x0F0F", "0x00FF"}, {"0xAAAA", "0xCCCC", "0xF0F0", "0xFF00"}};
 	ivector.push_back( new PackStoreFVec(r[0], rAddr, masks[fb][dim]));
 	ivector.push_back( new PackStoreFVec(r[0], lAddr, masks[1-fb][dim]));
 	
@@ -780,7 +780,7 @@ int packXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, cons
 int unpackXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir) {
 	int dim = dir/2;
 	int fb = dir % 2;
-	string masks[2][4] = {{"0x5555", "0xCCCC", "0x0F0F", "0x00FF"}, {"0xAAAA", "0x3333", "0xF0F0", "0xFF00"}};
+	string masks[2][4] = {{"0x5555", "0x3333", "0x0F0F", "0x00FF"}, {"0xAAAA", "0xCCCC", "0xF0F0", "0xFF00"}};
 	ivector.push_back( new LoadUnpackFVec(r[0], rAddr, masks[fb][dim]));
 	ivector.push_back( new LoadUnpackFVec(r[0], lAddr, masks[1-fb][dim]));
 	
