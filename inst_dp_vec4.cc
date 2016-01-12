@@ -372,6 +372,106 @@ private:
     int imm;
 };
 
+class PermuteXYZTFVec : public Instruction
+{
+	public:
+		PermuteXYZTFVec(const FVec& ret_, const FVec& a_, int dir_) : ret(ret_), a(a_), dir(dir_/2) {}
+		string serialize() const
+		{
+			ostringstream stream;
+			if(dir == 0) {
+				stream << ret.getName() << " = _mm256_permute_pd(" << a.getName() << ", 0x05);";
+			}
+			else if(dir == 1) {
+				stream << ret.getName() << " = _mm256_permute2f128_pd(" << a.getName() << ", "  << a.getName() << ", 0x01);" ;
+			}
+			else {
+				// nothing needs t be done for dir 2 & 3
+			}
+			return stream.str();
+		}
+		int numArithmeticInst() const
+		{
+			return 0;
+		}
+	private:
+		const FVec ret;
+		const FVec a;
+		int dir;
+};
+
+class PackXYZTFVec : public Instruction
+{
+	public:
+		PackXYZTFVec(const FVec& a_, const FVec& b_, const Address *lAddr_, const Address *rAddr_, int dir_) : a(a_), b(b_), lAddr(lAddr_), rAddr(rAddr_), dir(dir_) {}
+		string serialize() const
+		{
+			ostringstream stream;
+			int dim = dir / 2;
+			int fb = dir % 2;
+
+			if(dim == 0) {
+				string imm[2] = {"0x00", "0x0F"};
+				stream << "_mm256_stream_pd(" << rAddr->serialize() << ", _mm256_shuffle_pd(" << a.getName() << ", " << b.getName() << ", "  << imm[fb] << "));" << endl;
+				stream << "_mm256_stream_pd(" << lAddr->serialize() << ", _mm256_shuffle_pd(" << a.getName() << ", " << b.getName() << ", "  << imm[1-fb] << "));";
+			}
+			else if(dim == 1) {
+				string imm[2] = {"0x20", "0x31"};
+				stream << "_mm256_stream_pd(" << rAddr->serialize() << ", _mm256_permute2f128_pd(" << a.getName() << ", " << b.getName() << ", "  << imm[fb] << "));" << endl;
+				stream << "_mm256_stream_pd(" << lAddr->serialize() << ", _mm256_permute2f128_pd(" << a.getName() << ", " << b.getName() << ", "  << imm[1-fb] << "));";
+			}
+			else {
+				// this is taken care outside
+			}
+			return stream.str();
+		}
+		int numArithmeticInst() const
+		{
+			return 0;
+		}
+	private:
+		const FVec a;
+		const FVec b;
+		const Address *lAddr, *rAddr;
+		int dir;
+};
+
+class UnpackXYZTFVec : public Instruction
+{
+public:
+    UnpackXYZTFVec(const FVec& a_, const FVec& b_, const Address *lAddr_, const Address *rAddr_, int dir_) : a(a_), b(b_), lAddr(lAddr_), rAddr(rAddr_), dir(dir_) {}
+    string serialize() const
+    {
+        ostringstream stream;
+		int dim = dir / 2;
+		int fb = dir % 2;
+
+		if(dim == 0) {
+			const Address *adr[2] = {rAddr, lAddr};
+	        stream << a.getName() << " = _mm256_shuffle_pd(_mm256_load_pd(" << adr[fb]->serialize() << "), _mm256_load_pd(" << adr[1-fb]->serialize() << "), 0x00);" << endl;
+	        stream << b.getName() << " = _mm256_shuffle_pd(_mm256_load_pd(" << adr[fb]->serialize() << "), _mm256_load_pd(" << adr[1-fb]->serialize() << "), 0x0F);" << endl;
+		}
+		else if(dim == 1) {
+			const Address *adr[2] = {rAddr, lAddr};
+	        stream << a.getName() << " = _mm256_permute2f128_pd(_mm256_load_pd(" << adr[fb]->serialize() << "), _mm256_load_pd(" << adr[1-fb]->serialize() << "), 0x20);" << endl;
+	        stream << b.getName() << " = _mm256_permute2f128_pd(_mm256_load_pd(" << adr[fb]->serialize() << "), _mm256_load_pd(" << adr[1-fb]->serialize() << "), 0x31);" << endl;
+		}
+		else {
+			// this is taken care outside
+		}
+        return stream.str();
+    }
+    int numArithmeticInst() const
+    {
+        return 0;
+    }
+private:
+    const FVec a;
+    const FVec b;
+	const Address *lAddr, *rAddr;
+    int dir;
+};
+
 class LoadHalfFVec : public MemRefInstruction
 {
 public:
@@ -847,6 +947,37 @@ void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen)
     default:
         printf("SOALEN = %d Not Supported (only SOALEN = 2, 4 supported)\n", soalen);
     }
+}
+
+void permuteXYZTFVec(InstVector& ivector, const FVec r, const FVec f, int dir)
+{
+	ivector.push_back(new PermuteXYZTFVec(r, f, dir));
+}
+
+int packXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir) 
+{
+	//string masks[2][3] = {{"0x55", "0xCC", "0x0F"}, {"0xAA", "0x33", "0xF0"}};
+	if(dir < 4) {
+		ivector.push_back( new PackXYZTFVec(r[0], r[1], lAddr, rAddr, dir));
+		return VECLEN;
+	}
+	else {
+		ivector.push_back( new StoreFVec( r[0], rAddr, 1));
+		ivector.push_back( new StoreFVec( r[1], new AddressImm(rAddr, VECLEN), 1));
+		return 2*VECLEN;
+	}
+}
+
+int unpackXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir) {
+	if(dir < 4) {
+		ivector.push_back( new UnpackXYZTFVec(r[0], r[1], lAddr, rAddr, dir));
+		return VECLEN;
+	}
+	else {
+		ivector.push_back( new LoadFVec( r[0], rAddr, string("")));
+		ivector.push_back( new LoadFVec( r[1], new AddressImm(rAddr, VECLEN), string("")));
+		return 2*VECLEN;
+	}
 }
 
 #endif // PRECISION == 2

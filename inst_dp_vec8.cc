@@ -515,6 +515,50 @@ private:
     const int imm;
 };
 
+class PermuteXYZTFVec : public Instruction
+{
+public:
+    PermuteXYZTFVec(const FVec& ret_, const FVec& a_, int dir_) : ret(ret_), a(a_), dir(dir_/2) {}
+    string serialize() const
+    {
+        ostringstream stream;
+#ifndef AVX512
+		if(dir < 2) {
+			string imm = (dir == 0 ? "_MM_SWIZ_REG_CDAB" : "_MM_SWIZ_REG_BADC");
+	        stream << ret.getName() << " = _mm512_swizzle_pd(" << a.getName() << ", "  << imm << ");";
+		}
+		else if(dir == 2) {
+			string imm = "_MM_PERM_BADC";
+			stream << ret.getName() << " = _mm512_castps_pd(_mm512_permute4f128_ps(_mm512_castpd_ps(" << a.getName() << "), " << imm << "));";
+		}
+		else {
+			// nothing needs t be done for dir 3
+		}
+#else // AVX512 defined
+		if(dir == 0) {
+			string imm = "0x55";
+	        stream << ret.getName() << " = _mm512_permute_pd(" << a.getName() << ", "  << imm << ");";
+		} 
+		else if(dir < 3) {
+			string imm = (dir == 1 ? "0xB1" : "0x4E");
+			stream << ret.getName() << " = _mm512_shuffle_f64x2(" << a.getName() << ", "  << a.getName() << ", " << imm << ");" ;
+		}
+		else {
+			// nothing needs t be done for dir 3
+		}
+#endif // AVX512
+        return stream.str();
+    }
+    int numArithmeticInst() const
+    {
+        return 0;
+    }
+private:
+    const FVec ret;
+    const FVec a;
+    int dir;
+};
+
 void loadSOAFVec(InstVector& ivector, const FVec& ret, const Address *a, int soanum, int soalen)
 {
     int mskbits = (((1 << soalen)-1) << (soanum*soalen));
@@ -690,6 +734,51 @@ void transpose(InstVector& ivector, const FVec r[], const FVec f[], int soalen)
     default:
         printf("SOALEN = %d Not Supported (only SOALEN = 2, 4 & 8 are supported)\n", soalen);
     }
+}
+
+void permuteXYZTFVec(InstVector& ivector, const FVec r, const FVec f, int dir)
+{
+	ivector.push_back(new PermuteXYZTFVec(r, f, dir));
+}
+
+int packXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir) 
+{
+	int dim = dir/2;
+	int fb = dir % 2;
+	if(dim < 3) {
+		string masks[2][3] = {{"0x55", "0x33", "0x0F"}, {"0xAA", "0xCC", "0xF0"}};
+		ivector.push_back( new PackStoreFVec(r[0], rAddr, masks[fb][dim]));
+		ivector.push_back( new PackStoreFVec(r[0], lAddr, masks[1-fb][dim]));
+
+		ivector.push_back( new PackStoreFVec(r[1], new AddressImm(rAddr, VECLEN/2), masks[fb][dim]));
+		ivector.push_back( new PackStoreFVec(r[1], new AddressImm(lAddr, VECLEN/2), masks[1-fb][dim]));
+		return VECLEN;
+	}
+	else {
+		ivector.push_back( new StoreFVec( r[0], rAddr, 1));
+		ivector.push_back( new StoreFVec( r[1], new AddressImm(rAddr, VECLEN), 1));
+		return 2*VECLEN;
+	}
+}
+
+int unpackXYZTFVec(InstVector& ivector, const FVec r[2], const Address*lAddr, const Address*rAddr, int dir) {
+	int dim = dir/2;
+	int fb = dir % 2;
+	if(dim < 3) {
+		string masks[2][3] = {{"0x55", "0x33", "0x0F"}, {"0xAA", "0xCC", "0xF0"}};
+		ivector.push_back( new LoadUnpackFVec(r[0], rAddr, masks[fb][dim]));
+		ivector.push_back( new LoadUnpackFVec(r[0], lAddr, masks[1-fb][dim]));
+
+		ivector.push_back( new LoadUnpackFVec(r[1], new AddressImm(rAddr, VECLEN/2), masks[fb][dim]));
+		ivector.push_back( new LoadUnpackFVec(r[1], new AddressImm(lAddr, VECLEN/2), masks[1-fb][dim]));
+
+		return VECLEN;
+	}
+	else {
+		ivector.push_back( new LoadFVec( r[0], rAddr, string("")));
+		ivector.push_back( new LoadFVec( r[1], new AddressImm(rAddr, VECLEN), string("")));
+		return 2*VECLEN;
+	}
 }
 
 #endif // PRECISION == 2
