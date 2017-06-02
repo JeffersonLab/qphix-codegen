@@ -40,7 +40,9 @@ void dslash_{{ isign }}_vec(
     const FT coeff_s,
     const FT coeff_t_f,
     const FT coeff_t_b,
-    const FT tbc_phases[4][2]);
+    const FT tbc_phases[4][2]) {
+    {{ not_implemented() }}
+}
 
 template <typename FT, int veclen, int soalen, bool compress12, bool tbc_x = false, bool tbc_y = false, bool tbc_z = false, bool tbc_t = false>
 void dslash_achimbdpsi_{{ isign }}_vec(
@@ -85,7 +87,9 @@ void dslash_achimbdpsi_{{ isign }}_vec(
     const FT coeff_t_f,
     const FT coeff_t_b,
     const FT tbc_phases[4][2],
-    const unsigned int accumulate[8]);
+    const unsigned int accumulate[8]) {
+    {{ not_implemented() }}
+}
 
 #ifdef QPHIX_DO_COMMS
 
@@ -113,7 +117,9 @@ void face_finish_dir_{{ isign }}(
     const int soprefdist,
     const FT beta,
     unsigned int mask,
-    int dir);
+    int dir) {
+    {{ not_implemented() }}
+}
 
 #endif // QPHIX_DO_COMMS (outer)
 {% endfor %}
