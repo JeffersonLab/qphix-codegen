@@ -2,9 +2,15 @@
 
 #include <iostream>
 
-{% macro not_implemented %}
-std::cout
-    << "This particular kernel is not implemented. sizeof(FT) = "
-    << sizeof(FT) << ", veclen=" << veclen << ", soalen=" << soalen
-    << ", compress12=" << compress12 << "" << std::endl;
-{% endmacro %}
+#define NOT_IMPLEMENTED                                            \
+  (std::cout                                                       \
+   << "This particular kernel is not implemented. sizeof(FT) = "   \
+   << sizeof(FT)                                                   \
+   << ", veclen="                                                  \
+   << veclen                                                       \
+   << ", soalen="                                                  \
+   << soalen                                                       \
+   << ", compress12="                                              \
+   << compress12                                                   \
+   << ""                                                           \
+   << std::endl);

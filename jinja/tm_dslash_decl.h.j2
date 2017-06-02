@@ -43,7 +43,7 @@ void tm_dslash_{{ isign }}_vec(
     const FT tbc_phases[4][2],
     const FT mu,
     const FT muinv) {
-    {{ not_implemented() }}
+    NOT_IMPLEMENTED;
 }
 
 template <typename FT, int veclen, int soalen, bool compress12, bool tbc_x = false, bool tbc_y = false, bool tbc_z = false, bool tbc_t = false>
@@ -91,7 +91,7 @@ void tm_dslash_achimbdpsi_{{ isign }}_vec(
     const FT tbc_phases[4][2],
     const FT mu,
     const unsigned int accumulate[8]) {
-    {{ not_implemented() }}
+    NOT_IMPLEMENTED;
 }
 
 #ifdef QPHIX_QMP_COMMS
@@ -112,7 +112,7 @@ void tm_face_finish_dir_{{ isign }}(
     const FT muinv,
     unsigned int mask,
     int dir) {
-    {{ not_implemented() }}
+    NOT_IMPLEMENTED;
 }
 
 #endif // QPHIX_QMP_COMMS (outer)
