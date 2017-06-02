@@ -3,7 +3,7 @@
 #include <iostream>
 
 #define NOT_IMPLEMENTED                                            \
-  (std::cout                                                       \
+  std::cout                                                       \
    << "This particular kernel is not implemented. sizeof(FT) = "   \
    << sizeof(FT)                                                   \
    << ", veclen="                                                  \
@@ -13,4 +13,4 @@
    << ", compress12="                                              \
    << compress12                                                   \
    << ""                                                           \
-   << std::endl);
+   << std::endl; abort();
